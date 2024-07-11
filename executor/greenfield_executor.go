@@ -23,7 +23,7 @@ import (
 	"github.com/bnb-chain/greenfield-relayer/config"
 	"github.com/bnb-chain/greenfield-relayer/logging"
 	"github.com/bnb-chain/greenfield-relayer/types"
-	gnfdsdktypes "github.com/bnb-chain/greenfield/sdk/types"
+	gnfdsdktypes "github.com/evmos/evmos/v12/sdk/types"
 )
 
 type GreenfieldExecutor struct {

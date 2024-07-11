@@ -5,16 +5,16 @@
     "aws_secret_name": "",
     "aws_bls_secret_name": "",
     "rpc_addrs": [
-      "http://127.0.0.1:26750"
+      "http://127.0.0.1:26657"
     ],
-    "private_key": "your_private_key",
-    "bls_private_key": "your_private_key",
+    "private_key": "b8736d8ebe9f17d99e90d20d5d69ee42b2725dc13dd71b567480831f0e22d23f",
+    "bls_private_key": "65fa329fdd931b85c2145450f01b1121e7d5ed1db20f884abfddf22f0d06a88c",
     "chain_id": 1,
-    "start_height": 1,
+    "start_height": 36650,
     "monitor_channel_list": [1,2,3,4,5,6],
-    "gas_limit": 1000,
+    "gas_limit": 500000,
     "fee_amount": 5000000000000,
-    "chain_id_string": "greenfield_9000-121",
+    "chain_id_string": "mechain_1000000-121",
     "use_websocket": true
   },
   "bsc_config": {
@@ -23,22 +23,23 @@
     "aws_region": "",
     "aws_secret_name": "",
     "rpc_addrs": [
-      "localhost:9090"
+      "https://bsc-testnet-rpc.publicnode.com"
     ],
-    "private_key": "your_private_key",
+    "private_key": "b8736d8ebe9f17d99e90d20d5d69ee42b2725dc13dd71b567480831f0e22d23f",
     "gas_limit": 4700000,
     "gas_price": 10000000000,
     "number_of_blocks_for_finality": 2,
-    "start_height": 0,
-    "chain_id": 714
+    "start_height": 41929170,
+    "chain_id": 97
   },
   "relay_config": {
     "bsc_to_greenfield_inturn_relayer_timeout": 40,
     "greenfield_to_bsc_inturn_relayer_timeout": 30,
     "greenfield_sequence_update_latency": 8,
     "bsc_sequence_update_latency": 12,
-    "cross_chain_contract_addr": "0x3a282380958194D1131bC49056abb712Ab98b82B",
-    "greenfield_light_client_contract_addr": "0x60B1E6259944Ea8CEEfFAe2d50Df33EE3CCc593A"
+    "cross_chain_contract_addr": "0xa5B2c9194131A4E0BFaCbF9E5D6722c873159cb7",
+    "greenfield_light_client_contract_addr": "0xa9249cefF9cBc9BAC0D9167b79123b6C7413F50a",
+    "relayer_hub_contract_addr": "0x91cA83d95c8454277d1C297F78082B589e6E4Ea3"
   },
   "vote_pool_config": {
     "broadcast_interval_in_millisecond": 1000,
@@ -63,9 +64,9 @@
     "key_type": "local_private_key",
     "aws_region": "",
     "aws_secret_name": "",
-    "password": "pass",
+    "password": "mechain",
     "username": "root",
-    "url": "/local-greenfield-relayer0?charset=utf8&parseTime=True&loc=Local",
+    "url": "/greenfield-relayer?charset=utf8&parseTime=True&loc=Local",
     "max_idle_conns": 10,
     "max_open_conns": 100
   },
