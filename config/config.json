@@ -14,7 +14,7 @@
     "monitor_channel_list": [1,2,3,4,5,6],
     "gas_limit": 500000,
     "fee_amount": 5000000000000,
-    "chain_id_string": "mechain_1000000-121",
+    "chain_id_string": "mechain_5600-121",
     "use_websocket": true
   },
   "bsc_config": {
@@ -37,9 +37,9 @@
     "greenfield_to_bsc_inturn_relayer_timeout": 30,
     "greenfield_sequence_update_latency": 8,
     "bsc_sequence_update_latency": 12,
-    "cross_chain_contract_addr": "0xa5B2c9194131A4E0BFaCbF9E5D6722c873159cb7",
-    "greenfield_light_client_contract_addr": "0xa9249cefF9cBc9BAC0D9167b79123b6C7413F50a",
-    "relayer_hub_contract_addr": "0x91cA83d95c8454277d1C297F78082B589e6E4Ea3"
+    "cross_chain_contract_addr": "0x1eFF84B81f19a222C20eB0d0b71aB4C66F05E734",
+    "greenfield_light_client_contract_addr": "0xEf91e8A6441a8FEB2c5238b8DB692858C33d1046",
+    "relayer_hub_contract_addr": "0xEcA6251E41FEc0EBC679dE508bDFdB32d074b3Dc"
   },
   "vote_pool_config": {
     "broadcast_interval_in_millisecond": 1000,
