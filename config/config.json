@@ -9,7 +9,7 @@
     ],
     "private_key": "b8736d8ebe9f17d99e90d20d5d69ee42b2725dc13dd71b567480831f0e22d23f",
     "bls_private_key": "65fa329fdd931b85c2145450f01b1121e7d5ed1db20f884abfddf22f0d06a88c",
-    "chain_id": 1,
+    "chain_id": 5600,
     "start_height": 36650,
     "monitor_channel_list": [1,2,3,4,5,6],
     "gas_limit": 500000,
