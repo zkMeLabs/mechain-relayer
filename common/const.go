@@ -17,6 +17,7 @@ var (
 
 const (
 	OracleChannelId              types.ChannelId = 0
+	ZkmeSBTChannelId             types.ChannelId = 10
 	SleepTimeAfterSyncLightBlock                 = 15 * time.Second
 
 	ListenerPauseTime  = 3 * time.Second
@@ -24,4 +25,7 @@ const (
 	AssembleInterval   = 500 * time.Millisecond
 
 	TxDelayAlertThreshHold = 300 // in second
+
+	DefaultBscMirrorZkmeSBTRelayerFee    = "1300000000000000" // 0.0013
+	DefaultBscMirrorZkmeSBTAckRelayerFee = "250000000000000"  // 0.00025
 )

@@ -57,13 +57,13 @@ func newBSCClients(config *config.Config) []*BSCClient {
 			common.HexToAddress(config.RelayConfig.GreenfieldLightClientContractAddr),
 			ethClient)
 		if err != nil {
-			panic("new crossChain client error")
+			panic("new greenfield light client error")
 		}
 		crossChainClient, err := crosschain.NewCrosschain(
 			common.HexToAddress(config.RelayConfig.CrossChainContractAddr),
 			ethClient)
 		if err != nil {
-			panic("new greenfield light client error")
+			panic("new crossChain client error")
 		}
 		relayerHub, err := relayerhub.NewRelayerhub(
 			common.HexToAddress(config.RelayConfig.RelayerHubContractAddr),

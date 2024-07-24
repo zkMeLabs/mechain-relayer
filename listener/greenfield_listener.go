@@ -2,9 +2,12 @@ package listener
 
 import (
 	"bytes"
+	"context"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -12,9 +15,15 @@ import (
 	ctypes "github.com/cometbft/cometbft/rpc/core/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/cometbft/cometbft/votepool"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	ethcommon "github.com/ethereum/go-ethereum/common"
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/bnb-chain/greenfield-relayer/common"
 	"github.com/bnb-chain/greenfield-relayer/config"
+	"github.com/bnb-chain/greenfield-relayer/contract/zkmecrosschainupgradeable"
 	"github.com/bnb-chain/greenfield-relayer/db"
 	"github.com/bnb-chain/greenfield-relayer/db/dao"
 	"github.com/bnb-chain/greenfield-relayer/db/model"
@@ -29,16 +38,22 @@ type GreenfieldListener struct {
 	greenfieldExecutor *executor.GreenfieldExecutor
 	bscExecutor        *executor.BSCExecutor
 	DaoManager         *dao.DaoManager
+	crossChainAbi      abi.ABI
 	metricService      *metric.MetricService
 }
 
 func NewGreenfieldListener(cfg *config.Config, gnfdExecutor *executor.GreenfieldExecutor, bscExecutor *executor.BSCExecutor,
 	dao *dao.DaoManager, ms *metric.MetricService) *GreenfieldListener {
+	crossChainAbi, err := abi.JSON(strings.NewReader(zkmecrosschainupgradeable.IZKMECrossChainUpgradeableMetaData.ABI))
+	if err != nil {
+		panic("marshal abi error")
+	}
 	return &GreenfieldListener{
 		config:             cfg,
 		greenfieldExecutor: gnfdExecutor,
 		bscExecutor:        bscExecutor,
 		DaoManager:         dao,
+		crossChainAbi:      crossChainAbi,
 		metricService:      ms,
 	}
 }
@@ -129,6 +144,26 @@ func (l *GreenfieldListener) monitorTxEvents(block *tmtypes.Block, txRes []*abci
 				txChan <- relayTx
 			}
 		}
+	}
+
+	logs, err := l.queryCrossChainLogs(uint64(block.Height))
+	if err != nil {
+		errChan <- err
+		return
+	}
+
+	for _, log := range logs {
+		logging.Logger.Infof("get log: %d, %s, %s", log.BlockNumber, log.Topics[0].String(), log.TxHash.String())
+		relayTx, err := ParseZkmeSBTRelayPackage(&l.crossChainAbi,
+			&log, uint64(block.Header.Time.Unix()),
+			sdk.ChainID(l.config.GreenfieldConfig.ChainId),
+			sdk.ChainID(l.config.BSCConfig.ChainId),
+		)
+		if err != nil {
+			logging.Logger.Errorf("failed to parse event log, txHash=%s, err=%s", log.TxHash, err.Error())
+			continue
+		}
+		txChan <- relayTx
 	}
 }
 
@@ -320,6 +355,29 @@ func constructRelayTx(event abci.Event, height uint64) (*model.GreenfieldRelayTr
 	relayTx.Height = height
 	relayTx.UpdatedTime = time.Now().Unix()
 	return &relayTx, nil
+}
+
+func (l *GreenfieldListener) queryCrossChainLogs(height uint64) ([]ethtypes.Log, error) {
+	client := l.greenfieldExecutor.GetEthClient()
+	topics := [][]ethcommon.Hash{{l.getCrossChainPackageEventHash()}}
+	logs, err := client.FilterLogs(context.Background(), ethereum.FilterQuery{
+		FromBlock: big.NewInt(int64(height)),
+		ToBlock:   big.NewInt(int64(height)),
+		Topics:    topics,
+		Addresses: []ethcommon.Address{l.getCrossChainContractAddress()},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to query zkmesbt cross chain logs, err=%s", err.Error())
+	}
+	return logs, nil
+}
+
+func (l *GreenfieldListener) getCrossChainPackageEventHash() ethcommon.Hash {
+	return ethcommon.HexToHash(ZkmeSBTCrossChainPackageEventHex)
+}
+
+func (l *GreenfieldListener) getCrossChainContractAddress() ethcommon.Address {
+	return ethcommon.HexToAddress(l.config.RelayConfig.SrcZkmeSBTContractAddr)
 }
 
 func (l *GreenfieldListener) PurgeLoop() {

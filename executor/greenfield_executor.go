@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/avast/retry-go/v4"
@@ -15,6 +16,7 @@ import (
 	sdkErrors "github.com/cosmos/cosmos-sdk/types/errors"
 	oracletypes "github.com/cosmos/cosmos-sdk/x/oracle/types"
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/prysmaticlabs/prysm/crypto/bls/blst"
 	"github.com/spf13/viper"
 
@@ -27,6 +29,7 @@ import (
 )
 
 type GreenfieldExecutor struct {
+	mutex         sync.RWMutex
 	BscExecutor   *BSCExecutor
 	gnfdClients   GnfdCompositeClients
 	config        *config.Config
@@ -60,6 +63,7 @@ func NewGreenfieldExecutor(cfg *config.Config) *GreenfieldExecutor {
 		cfg.GreenfieldConfig.ChainIdString,
 		account,
 		cfg.GreenfieldConfig.UseWebsocket,
+		cfg.RelayConfig.SrcZkmeSBTContractAddr,
 	)
 	return &GreenfieldExecutor{
 		gnfdClients:   clients,
@@ -114,6 +118,12 @@ func getGreenfieldBlsPrivateKey(cfg *config.GreenfieldConfig) string {
 
 func (e *GreenfieldExecutor) GetGnfdClient() *GreenfieldClient {
 	return e.gnfdClients.GetClient()
+}
+
+func (e *GreenfieldExecutor) GetEthClient() *ethclient.Client {
+	e.mutex.RLock()
+	defer e.mutex.RUnlock()
+	return e.gnfdClients.GetClient().ethClient
 }
 
 func (e *GreenfieldExecutor) GetBlockAndBlockResultAtHeight(height int64) (*tmtypes.Block, *ctypes.ResultBlockResults, error) {

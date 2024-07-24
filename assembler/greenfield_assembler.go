@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"sync"
 	"time"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/bnb-chain/greenfield-relayer/common"
 	"github.com/bnb-chain/greenfield-relayer/config"
@@ -156,11 +157,21 @@ func (a *GreenfieldAssembler) process(channelId types.ChannelId, inturnRelayer *
 			return nil
 		}
 	} else {
-		endSeq, err := a.greenfieldExecutor.GetNextSendSequenceForChannelWithRetry(a.getDestChainId(), channelId)
-		if err != nil {
-			return fmt.Errorf("faield to get next send sequence, err=%s", err.Error())
+		if channelId == common.ZkmeSBTChannelId {
+			endSequence, err = a.daoManager.GreenfieldDao.GetLatestSequenceByChannelId(channelId)
+			if err != nil {
+				return fmt.Errorf("faield to get latest sequence from DB, err=%s", err.Error())
+			}
+			if endSequence == -1 {
+				endSequence = 0
+			}
+		} else {
+			endSeq, err := a.greenfieldExecutor.GetNextSendSequenceForChannelWithRetry(a.getDestChainId(), channelId)
+			if err != nil {
+				return fmt.Errorf("failed to get next send sequence, err=%s", err.Error())
+			}
+			endSequence = int64(endSeq)
 		}
-		endSequence = int64(endSeq)
 	}
 
 	logging.Logger.Debugf("channel %d start seq and end enq are %d and %d", channelId, startSeq, endSequence)
