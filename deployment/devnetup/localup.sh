@@ -15,7 +15,7 @@ function start() {
     for ((i = 0; i < ${size}; i++)); do
         mkdir -p "${workspace}"/.local/relayer${i}/logs
         nohup "${bin}" run --config-type local \
-            --config-path "${workspace}"/config_${i}.json \
+            --config-path "${workspace}"/config${i}.json \
             --log_dir json >"${workspace}"/.local/relayer${i}/logs/relayer.log &
     done
 }
