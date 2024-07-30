@@ -2,9 +2,11 @@ package executor
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"sync"
 	"time"
 
@@ -15,7 +17,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkErrors "github.com/cosmos/cosmos-sdk/types/errors"
 	oracletypes "github.com/cosmos/cosmos-sdk/x/oracle/types"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/prysmaticlabs/prysm/crypto/bls/blst"
 	"github.com/spf13/viper"
@@ -23,6 +27,7 @@ import (
 	sdktypes "github.com/bnb-chain/greenfield-go-sdk/types"
 	relayercommon "github.com/bnb-chain/greenfield-relayer/common"
 	"github.com/bnb-chain/greenfield-relayer/config"
+	"github.com/bnb-chain/greenfield-relayer/contract/zkmecrosschainupgradeable"
 	"github.com/bnb-chain/greenfield-relayer/logging"
 	"github.com/bnb-chain/greenfield-relayer/types"
 	gnfdsdktypes "github.com/evmos/evmos/v12/sdk/types"
@@ -33,6 +38,7 @@ type GreenfieldExecutor struct {
 	BscExecutor   *BSCExecutor
 	gnfdClients   GnfdCompositeClients
 	config        *config.Config
+	privateKey    *ecdsa.PrivateKey
 	address       string
 	validators    []*tmtypes.Validator // used to cache validators
 	BlsPrivateKey []byte
@@ -43,6 +49,10 @@ func NewGreenfieldExecutor(cfg *config.Config) *GreenfieldExecutor {
 	privKey := viper.GetString(config.FlagConfigPrivateKey)
 	if privKey == "" {
 		privKey = getGreenfieldPrivateKey(&cfg.GreenfieldConfig)
+	}
+	ecdsaPrivKey, err := crypto.HexToECDSA(privKey)
+	if err != nil {
+		panic(err)
 	}
 	blsPrivKeyStr := viper.GetString(config.FlagConfigBlsPrivateKey)
 	if blsPrivKeyStr == "" {
@@ -69,6 +79,7 @@ func NewGreenfieldExecutor(cfg *config.Config) *GreenfieldExecutor {
 		gnfdClients:   clients,
 		address:       account.GetAddress().String(),
 		config:        cfg,
+		privateKey:    ecdsaPrivKey,
 		BlsPrivateKey: blsPrivKeyBts,
 		BlsPubKey:     blsPrivKey.PublicKey().Marshal(),
 	}
@@ -124,6 +135,12 @@ func (e *GreenfieldExecutor) GetEthClient() *ethclient.Client {
 	e.mutex.RLock()
 	defer e.mutex.RUnlock()
 	return e.gnfdClients.GetClient().ethClient
+}
+
+func (e *GreenfieldExecutor) getCrossChainClient() *zkmecrosschainupgradeable.IZKMECrossChainUpgradeable {
+	e.mutex.RLock()
+	defer e.mutex.RUnlock()
+	return e.gnfdClients.GetClient().zkmeCrossChainClient
 }
 
 func (e *GreenfieldExecutor) GetBlockAndBlockResultAtHeight(height int64) (*tmtypes.Block, *ctypes.ResultBlockResults, error) {
@@ -194,13 +211,17 @@ func (e *GreenfieldExecutor) getNextDeliverySequenceForChannel(channelID types.C
 // GetNextSendSequenceForChannelWithRetry gets the next send sequence of a specified channel from Greenfield
 func (e *GreenfieldExecutor) GetNextSendSequenceForChannelWithRetry(destChainID sdk.ChainID, channelID types.ChannelId) (sequence uint64, err error) {
 	return sequence, retry.Do(func() error {
-		sequence, err = e.getNextSendSequenceForChannel(destChainID, channelID)
+		if channelID != relayercommon.ZkmeSBTChannelId {
+			sequence, err = e.getNextSendSequenceForChannel(destChainID, channelID)
+		} else {
+			sequence, err = e.getNextZkmeSendSequenceForChain(destChainID)
+		}
 		return err
 	}, relayercommon.RtyAttem,
 		relayercommon.RtyDelay,
 		relayercommon.RtyErr,
 		retry.OnRetry(func(n uint, err error) {
-			logging.Logger.Errorf("failed to query send sequence for channel %d, attempt: %d times, max_attempts: %d", channelID, n+1, relayercommon.RtyAttNum)
+			logging.Logger.Errorf("failed to query send sequence for chain %d, channel %d, attempt: %d times, max_attempts: %d", destChainID, channelID, n+1, relayercommon.RtyAttNum)
 		}))
 }
 
@@ -212,6 +233,20 @@ func (e *GreenfieldExecutor) getNextSendSequenceForChannel(destChainId sdk.Chain
 		destChainId,
 		uint32(channelId),
 	)
+}
+
+func (e *GreenfieldExecutor) getNextZkmeSendSequenceForChain(destChainId sdk.ChainID) (uint64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), RPCTimeout)
+	defer cancel()
+	callOpts := &bind.CallOpts{
+		Pending: true,
+		Context: ctx,
+	}
+	seq, err := e.getCrossChainClient().GetCrossChainSequence(callOpts, uint32(destChainId))
+	if err != nil {
+		return 0, err
+	}
+	return seq.Uint64(), err
 }
 
 // GetNextReceiveOracleSequence gets the next receive Oracle sequence from Greenfield
@@ -305,6 +340,54 @@ func (e *GreenfieldExecutor) GetNonceOnNextBlock() (uint64, error) {
 		return 0, err
 	}
 	return e.GetNonce()
+}
+
+func (e *GreenfieldExecutor) getGasPrice() (*big.Int, error) {
+	var (
+		gasPrice *big.Int
+		err      error
+	)
+	ctx, cancel := context.WithTimeout(context.Background(), RPCTimeout)
+	defer cancel()
+	if e.config.BSCConfig.GasPrice == 0 {
+		gasPrice, err = e.GetEthClient().SuggestGasPrice(ctx)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		gasPrice = big.NewInt(int64(e.config.BSCConfig.GasPrice))
+	}
+	return gasPrice, nil
+}
+
+// TODO
+func (e *GreenfieldExecutor) getTransactor(nonce uint64) (*bind.TransactOpts, error) {
+	txOpts, err := bind.NewKeyedTransactorWithChainID(e.privateKey, big.NewInt(int64(e.config.GreenfieldConfig.ChainId)))
+	if err != nil {
+		return nil, err
+	}
+	gasPrice, err := e.getGasPrice()
+	if err != nil {
+		return nil, err
+	}
+	txOpts.Nonce = big.NewInt(int64(nonce))
+	txOpts.Value = big.NewInt(0)
+	txOpts.GasLimit = e.config.BSCConfig.GasLimit
+	txOpts.GasPrice = big.NewInt(gasPrice.Int64() + 1)
+	return txOpts, nil
+}
+
+func (e *GreenfieldExecutor) CallZkmeSBTAckMintedContract(chainId uint32, user ethcommon.Address, status uint8, nonce uint64) (ethcommon.Hash, error) {
+	txOpts, err := e.getTransactor(nonce)
+	if err != nil {
+		return ethcommon.Hash{}, err
+	}
+
+	tx, err := e.getCrossChainClient().AckMinted(txOpts, chainId, user, status)
+	if err != nil {
+		return ethcommon.Hash{}, err
+	}
+	return tx.Hash(), nil
 }
 
 func (e *GreenfieldExecutor) ClaimPackages(client *GreenfieldClient, payloadBts []byte, aggregatedSig []byte, voteAddressSet []uint64, claimTs int64, oracleSeq uint64, nonce uint64) (string, error) {

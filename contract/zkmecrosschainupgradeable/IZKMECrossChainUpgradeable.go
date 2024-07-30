@@ -33,14 +33,14 @@ var (
 type KYCDataLibEventData struct {
 	SrcChainId  uint32
 	DestChainId uint32
+	ChannelId   uint32
 	Sequence    *big.Int
-	ChannelId   *big.Int
 	Payload     []byte
 }
 
 // IZKMECrossChainUpgradeableMetaData contains all meta data concerning the IZKMECrossChainUpgradeable contract.
 var IZKMECrossChainUpgradeableMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"uint32\",\"name\":\"srcChainId\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"destChainId\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"sequence\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"channelId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"indexed\":true,\"internalType\":\"structKYCDataLib.EventData\",\"name\":\"eventData\",\"type\":\"tuple\"}],\"name\":\"ZkmeSBTCrossChainPackage\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"chainId\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ackMinted\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"chainId\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"srcUser\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"destUser\",\"type\":\"address\"}],\"name\":\"forward\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"chainId\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"getCrossChainStatus\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"srcChainId\",\"type\":\"uint32\"},{\"indexed\":true,\"internalType\":\"uint32\",\"name\":\"destChainId\",\"type\":\"uint32\"},{\"indexed\":true,\"internalType\":\"uint32\",\"name\":\"channelId\",\"type\":\"uint32\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"sequence\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"payload\",\"type\":\"bytes\"}],\"name\":\"ZkmeSBTCrossChainPackage\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"chainId\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"status\",\"type\":\"uint8\"}],\"name\":\"ackMinted\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"chainId\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"srcUser\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"destUser\",\"type\":\"address\"}],\"name\":\"forward\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"chainId\",\"type\":\"uint32\"}],\"name\":\"getCrossChainSequence\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"chainId\",\"type\":\"uint32\"},{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"getCrossChainStatus\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // IZKMECrossChainUpgradeableABI is the input ABI used to generate the binding from.
@@ -189,12 +189,12 @@ func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableTransactorRaw) Tran
 	return _IZKMECrossChainUpgradeable.Contract.contract.Transact(opts, method, params...)
 }
 
-// GetCrossChainStatus is a free data retrieval call binding the contract method 0xfbdafb72.
+// GetCrossChainSequence is a free data retrieval call binding the contract method 0xd8b2a23b.
 //
-// Solidity: function getCrossChainStatus(uint32 chainId, address user) view returns(uint256)
-func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableCaller) GetCrossChainStatus(opts *bind.CallOpts, chainId uint32, user common.Address) (*big.Int, error) {
+// Solidity: function getCrossChainSequence(uint32 chainId) view returns(uint256)
+func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableCaller) GetCrossChainSequence(opts *bind.CallOpts, chainId uint32) (*big.Int, error) {
 	var out []interface{}
-	err := _IZKMECrossChainUpgradeable.contract.Call(opts, &out, "getCrossChainStatus", chainId, user)
+	err := _IZKMECrossChainUpgradeable.contract.Call(opts, &out, "getCrossChainSequence", chainId)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -206,39 +206,70 @@ func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableCaller) GetCrossCha
 
 }
 
+// GetCrossChainSequence is a free data retrieval call binding the contract method 0xd8b2a23b.
+//
+// Solidity: function getCrossChainSequence(uint32 chainId) view returns(uint256)
+func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableSession) GetCrossChainSequence(chainId uint32) (*big.Int, error) {
+	return _IZKMECrossChainUpgradeable.Contract.GetCrossChainSequence(&_IZKMECrossChainUpgradeable.CallOpts, chainId)
+}
+
+// GetCrossChainSequence is a free data retrieval call binding the contract method 0xd8b2a23b.
+//
+// Solidity: function getCrossChainSequence(uint32 chainId) view returns(uint256)
+func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableCallerSession) GetCrossChainSequence(chainId uint32) (*big.Int, error) {
+	return _IZKMECrossChainUpgradeable.Contract.GetCrossChainSequence(&_IZKMECrossChainUpgradeable.CallOpts, chainId)
+}
+
 // GetCrossChainStatus is a free data retrieval call binding the contract method 0xfbdafb72.
 //
-// Solidity: function getCrossChainStatus(uint32 chainId, address user) view returns(uint256)
-func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableSession) GetCrossChainStatus(chainId uint32, user common.Address) (*big.Int, error) {
+// Solidity: function getCrossChainStatus(uint32 chainId, address user) view returns(uint8)
+func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableCaller) GetCrossChainStatus(opts *bind.CallOpts, chainId uint32, user common.Address) (uint8, error) {
+	var out []interface{}
+	err := _IZKMECrossChainUpgradeable.contract.Call(opts, &out, "getCrossChainStatus", chainId, user)
+
+	if err != nil {
+		return *new(uint8), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(uint8)).(*uint8)
+
+	return out0, err
+
+}
+
+// GetCrossChainStatus is a free data retrieval call binding the contract method 0xfbdafb72.
+//
+// Solidity: function getCrossChainStatus(uint32 chainId, address user) view returns(uint8)
+func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableSession) GetCrossChainStatus(chainId uint32, user common.Address) (uint8, error) {
 	return _IZKMECrossChainUpgradeable.Contract.GetCrossChainStatus(&_IZKMECrossChainUpgradeable.CallOpts, chainId, user)
 }
 
 // GetCrossChainStatus is a free data retrieval call binding the contract method 0xfbdafb72.
 //
-// Solidity: function getCrossChainStatus(uint32 chainId, address user) view returns(uint256)
-func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableCallerSession) GetCrossChainStatus(chainId uint32, user common.Address) (*big.Int, error) {
+// Solidity: function getCrossChainStatus(uint32 chainId, address user) view returns(uint8)
+func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableCallerSession) GetCrossChainStatus(chainId uint32, user common.Address) (uint8, error) {
 	return _IZKMECrossChainUpgradeable.Contract.GetCrossChainStatus(&_IZKMECrossChainUpgradeable.CallOpts, chainId, user)
 }
 
-// AckMinted is a paid mutator transaction binding the contract method 0x3ae65e32.
+// AckMinted is a paid mutator transaction binding the contract method 0xa7d7f87c.
 //
-// Solidity: function ackMinted(uint32 chainId, address user, uint256 tokenId) returns()
-func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableTransactor) AckMinted(opts *bind.TransactOpts, chainId uint32, user common.Address, tokenId *big.Int) (*types.Transaction, error) {
-	return _IZKMECrossChainUpgradeable.contract.Transact(opts, "ackMinted", chainId, user, tokenId)
+// Solidity: function ackMinted(uint32 chainId, address user, uint8 status) returns()
+func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableTransactor) AckMinted(opts *bind.TransactOpts, chainId uint32, user common.Address, status uint8) (*types.Transaction, error) {
+	return _IZKMECrossChainUpgradeable.contract.Transact(opts, "ackMinted", chainId, user, status)
 }
 
-// AckMinted is a paid mutator transaction binding the contract method 0x3ae65e32.
+// AckMinted is a paid mutator transaction binding the contract method 0xa7d7f87c.
 //
-// Solidity: function ackMinted(uint32 chainId, address user, uint256 tokenId) returns()
-func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableSession) AckMinted(chainId uint32, user common.Address, tokenId *big.Int) (*types.Transaction, error) {
-	return _IZKMECrossChainUpgradeable.Contract.AckMinted(&_IZKMECrossChainUpgradeable.TransactOpts, chainId, user, tokenId)
+// Solidity: function ackMinted(uint32 chainId, address user, uint8 status) returns()
+func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableSession) AckMinted(chainId uint32, user common.Address, status uint8) (*types.Transaction, error) {
+	return _IZKMECrossChainUpgradeable.Contract.AckMinted(&_IZKMECrossChainUpgradeable.TransactOpts, chainId, user, status)
 }
 
-// AckMinted is a paid mutator transaction binding the contract method 0x3ae65e32.
+// AckMinted is a paid mutator transaction binding the contract method 0xa7d7f87c.
 //
-// Solidity: function ackMinted(uint32 chainId, address user, uint256 tokenId) returns()
-func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableTransactorSession) AckMinted(chainId uint32, user common.Address, tokenId *big.Int) (*types.Transaction, error) {
-	return _IZKMECrossChainUpgradeable.Contract.AckMinted(&_IZKMECrossChainUpgradeable.TransactOpts, chainId, user, tokenId)
+// Solidity: function ackMinted(uint32 chainId, address user, uint8 status) returns()
+func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableTransactorSession) AckMinted(chainId uint32, user common.Address, status uint8) (*types.Transaction, error) {
+	return _IZKMECrossChainUpgradeable.Contract.AckMinted(&_IZKMECrossChainUpgradeable.TransactOpts, chainId, user, status)
 }
 
 // Forward is a paid mutator transaction binding the contract method 0x04b2c8df.
@@ -331,38 +362,58 @@ func (it *IZKMECrossChainUpgradeableZkmeSBTCrossChainPackageIterator) Close() er
 
 // IZKMECrossChainUpgradeableZkmeSBTCrossChainPackage represents a ZkmeSBTCrossChainPackage event raised by the IZKMECrossChainUpgradeable contract.
 type IZKMECrossChainUpgradeableZkmeSBTCrossChainPackage struct {
-	EventData KYCDataLibEventData
-	Raw       types.Log // Blockchain specific contextual infos
+	SrcChainId  uint32
+	DestChainId uint32
+	ChannelId   uint32
+	Sequence    *big.Int
+	Payload     []byte
+	Raw         types.Log // Blockchain specific contextual infos
 }
 
-// FilterZkmeSBTCrossChainPackage is a free log retrieval operation binding the contract event 0x1e2dd7094825f10dc568deef8da4b8efff58a93840fc76f4ead206f6c8c5cb82.
+// FilterZkmeSBTCrossChainPackage is a free log retrieval operation binding the contract event 0xc9f87fd9c5d4247a74066dab91cf75ddcd8d8ffd96b65be03729ffb11c9aed7f.
 //
-// Solidity: event ZkmeSBTCrossChainPackage((uint32,uint32,uint256,uint256,bytes) indexed eventData)
-func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableFilterer) FilterZkmeSBTCrossChainPackage(opts *bind.FilterOpts, eventData []KYCDataLibEventData) (*IZKMECrossChainUpgradeableZkmeSBTCrossChainPackageIterator, error) {
+// Solidity: event ZkmeSBTCrossChainPackage(uint32 srcChainId, uint32 indexed destChainId, uint32 indexed channelId, uint256 indexed sequence, bytes payload)
+func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableFilterer) FilterZkmeSBTCrossChainPackage(opts *bind.FilterOpts, destChainId []uint32, channelId []uint32, sequence []*big.Int) (*IZKMECrossChainUpgradeableZkmeSBTCrossChainPackageIterator, error) {
 
-	var eventDataRule []interface{}
-	for _, eventDataItem := range eventData {
-		eventDataRule = append(eventDataRule, eventDataItem)
+	var destChainIdRule []interface{}
+	for _, destChainIdItem := range destChainId {
+		destChainIdRule = append(destChainIdRule, destChainIdItem)
+	}
+	var channelIdRule []interface{}
+	for _, channelIdItem := range channelId {
+		channelIdRule = append(channelIdRule, channelIdItem)
+	}
+	var sequenceRule []interface{}
+	for _, sequenceItem := range sequence {
+		sequenceRule = append(sequenceRule, sequenceItem)
 	}
 
-	logs, sub, err := _IZKMECrossChainUpgradeable.contract.FilterLogs(opts, "ZkmeSBTCrossChainPackage", eventDataRule)
+	logs, sub, err := _IZKMECrossChainUpgradeable.contract.FilterLogs(opts, "ZkmeSBTCrossChainPackage", destChainIdRule, channelIdRule, sequenceRule)
 	if err != nil {
 		return nil, err
 	}
 	return &IZKMECrossChainUpgradeableZkmeSBTCrossChainPackageIterator{contract: _IZKMECrossChainUpgradeable.contract, event: "ZkmeSBTCrossChainPackage", logs: logs, sub: sub}, nil
 }
 
-// WatchZkmeSBTCrossChainPackage is a free log subscription operation binding the contract event 0x1e2dd7094825f10dc568deef8da4b8efff58a93840fc76f4ead206f6c8c5cb82.
+// WatchZkmeSBTCrossChainPackage is a free log subscription operation binding the contract event 0xc9f87fd9c5d4247a74066dab91cf75ddcd8d8ffd96b65be03729ffb11c9aed7f.
 //
-// Solidity: event ZkmeSBTCrossChainPackage((uint32,uint32,uint256,uint256,bytes) indexed eventData)
-func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableFilterer) WatchZkmeSBTCrossChainPackage(opts *bind.WatchOpts, sink chan<- *IZKMECrossChainUpgradeableZkmeSBTCrossChainPackage, eventData []KYCDataLibEventData) (event.Subscription, error) {
+// Solidity: event ZkmeSBTCrossChainPackage(uint32 srcChainId, uint32 indexed destChainId, uint32 indexed channelId, uint256 indexed sequence, bytes payload)
+func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableFilterer) WatchZkmeSBTCrossChainPackage(opts *bind.WatchOpts, sink chan<- *IZKMECrossChainUpgradeableZkmeSBTCrossChainPackage, destChainId []uint32, channelId []uint32, sequence []*big.Int) (event.Subscription, error) {
 
-	var eventDataRule []interface{}
-	for _, eventDataItem := range eventData {
-		eventDataRule = append(eventDataRule, eventDataItem)
+	var destChainIdRule []interface{}
+	for _, destChainIdItem := range destChainId {
+		destChainIdRule = append(destChainIdRule, destChainIdItem)
+	}
+	var channelIdRule []interface{}
+	for _, channelIdItem := range channelId {
+		channelIdRule = append(channelIdRule, channelIdItem)
+	}
+	var sequenceRule []interface{}
+	for _, sequenceItem := range sequence {
+		sequenceRule = append(sequenceRule, sequenceItem)
 	}
 
-	logs, sub, err := _IZKMECrossChainUpgradeable.contract.WatchLogs(opts, "ZkmeSBTCrossChainPackage", eventDataRule)
+	logs, sub, err := _IZKMECrossChainUpgradeable.contract.WatchLogs(opts, "ZkmeSBTCrossChainPackage", destChainIdRule, channelIdRule, sequenceRule)
 	if err != nil {
 		return nil, err
 	}
@@ -394,9 +445,9 @@ func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableFilterer) WatchZkme
 	}), nil
 }
 
-// ParseZkmeSBTCrossChainPackage is a log parse operation binding the contract event 0x1e2dd7094825f10dc568deef8da4b8efff58a93840fc76f4ead206f6c8c5cb82.
+// ParseZkmeSBTCrossChainPackage is a log parse operation binding the contract event 0xc9f87fd9c5d4247a74066dab91cf75ddcd8d8ffd96b65be03729ffb11c9aed7f.
 //
-// Solidity: event ZkmeSBTCrossChainPackage((uint32,uint32,uint256,uint256,bytes) indexed eventData)
+// Solidity: event ZkmeSBTCrossChainPackage(uint32 srcChainId, uint32 indexed destChainId, uint32 indexed channelId, uint256 indexed sequence, bytes payload)
 func (_IZKMECrossChainUpgradeable *IZKMECrossChainUpgradeableFilterer) ParseZkmeSBTCrossChainPackage(log types.Log) (*IZKMECrossChainUpgradeableZkmeSBTCrossChainPackage, error) {
 	event := new(IZKMECrossChainUpgradeableZkmeSBTCrossChainPackage)
 	if err := _IZKMECrossChainUpgradeable.contract.UnpackLog(event, "ZkmeSBTCrossChainPackage", log); err != nil {

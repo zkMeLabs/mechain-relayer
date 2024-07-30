@@ -3,37 +3,34 @@
       "anonymous": false,
       "inputs": [
         {
-          "components": [
-            {
-              "internalType": "uint32",
-              "name": "srcChainId",
-              "type": "uint32"
-            },
-            {
-              "internalType": "uint32",
-              "name": "destChainId",
-              "type": "uint32"
-            },
-            {
-              "internalType": "uint256",
-              "name": "sequence",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "channelId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bytes",
-              "name": "payload",
-              "type": "bytes"
-            }
-          ],
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "srcChainId",
+          "type": "uint32"
+        },
+        {
           "indexed": true,
-          "internalType": "struct KYCDataLib.EventData",
-          "name": "eventData",
-          "type": "tuple"
+          "internalType": "uint32",
+          "name": "destChainId",
+          "type": "uint32"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint32",
+          "name": "channelId",
+          "type": "uint32"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "sequence",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "payload",
+          "type": "bytes"
         }
       ],
       "name": "ZkmeSBTCrossChainPackage",
@@ -52,9 +49,9 @@
           "type": "address"
         },
         {
-          "internalType": "uint256",
-          "name": "tokenId",
-          "type": "uint256"
+          "internalType": "uint8",
+          "name": "status",
+          "type": "uint8"
         }
       ],
       "name": "ackMinted",
@@ -91,6 +88,25 @@
           "internalType": "uint32",
           "name": "chainId",
           "type": "uint32"
+        }
+      ],
+      "name": "getCrossChainSequence",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "chainId",
+          "type": "uint32"
         },
         {
           "internalType": "address",
@@ -101,9 +117,9 @@
       "name": "getCrossChainStatus",
       "outputs": [
         {
-          "internalType": "uint256",
+          "internalType": "uint8",
           "name": "",
-          "type": "uint256"
+          "type": "uint8"
         }
       ],
       "stateMutability": "view",

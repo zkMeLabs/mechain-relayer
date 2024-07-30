@@ -59,11 +59,12 @@ func ParseZkmeSBTRelayPackage(abi *abi.ABI, log *types.Log, timestamp uint64, gr
 		return nil, err
 	}
 	if sdk.ChainID(ev.SrcChainId) != greenfieldChainId || sdk.ChainID(ev.DestChainId) != bscChainId {
-		return nil, fmt.Errorf("zkmesbt event log's chain id(s) not expected, SrcChainId=%d, DstChainId=%d", ev.SrcChainId, ev.DestChainId)
+		return nil, fmt.Errorf("zkmesbt event log's chain id(s) not expected, SrcChainId=%d, DstChainId=%d, ChannelId=%d, Sequence=%d",
+			ev.SrcChainId, ev.DestChainId, ev.ChannelId, ev.Sequence.Int64())
 	}
 	var p model.GreenfieldRelayTransaction
 
-	p.ChannelId = uint8(ev.ChannelId.Uint64())
+	p.ChannelId = uint8(ev.ChannelId)
 	p.SrcChainId = ev.SrcChainId
 	p.DestChainId = ev.DestChainId
 	p.Sequence = ev.Sequence.Uint64()
@@ -88,5 +89,8 @@ func parseZkmeSBTCrossChainPackageEvent(abi *abi.ABI, log *types.Log) (*zkmecros
 	if err != nil {
 		return nil, err
 	}
+	ev.DestChainId = uint32(big.NewInt(0).SetBytes(log.Topics[1].Bytes()).Uint64())
+	ev.ChannelId = uint32(big.NewInt(0).SetBytes(log.Topics[2].Bytes()).Uint64())
+	ev.Sequence = big.NewInt(0).SetBytes(log.Topics[3].Bytes())
 	return &ev, nil
 }

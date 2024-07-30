@@ -32,7 +32,8 @@ func NewGnfdCompositClients(rpcAddrs []string, chainId string, account *types.Ac
 			logging.Logger.Errorf("rpc node %s is not available", rpcAddrs[i])
 			continue
 		}
-		ethClient, err := ethclient.Dial(rpcAddrs[i])
+		// TODO:
+		ethClient, err := ethclient.Dial("http://127.0.0.1:8545")
 		if err != nil {
 			panic("new eth client error")
 		}

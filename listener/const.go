@@ -12,5 +12,5 @@ const (
 	BSCCrossChainPackageEventName     = "CrossChainPackage"
 	ZkmeSBTCrossChainPackageEventName = "ZkmeSBTCrossChainPackage"
 	CrossChainPackageEventHex         = "0x64998dc5a229e7324e622192f111c691edccc3534bbea4b2bd90fbaec936845a"
-	ZkmeSBTCrossChainPackageEventHex  = "0x1e2dd7094825f10dc568deef8da4b8efff58a93840fc76f4ead206f6c8c5cb82"
+	ZkmeSBTCrossChainPackageEventHex  = "0xc9f87fd9c5d4247a74066dab91cf75ddcd8d8ffd96b65be03729ffb11c9aed7f"
 )

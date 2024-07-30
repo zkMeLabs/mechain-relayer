@@ -79,6 +79,7 @@ func (a *GreenfieldAssembler) AssembleTransactionsLoop() {
 		isInturnRelyer := bytes.Equal(a.blsPubKey, inturnRelayerPubkey)
 		a.metricService.SetBSCInturnRelayerMetrics(isInturnRelyer, inturnRelayer.Start, inturnRelayer.End)
 
+		logging.Logger.Debugf("----------------------------------------------------------------------------isInturnRelyer=%t", isInturnRelyer)
 		if (isInturnRelyer && !a.relayerNonceStatus.HasRetrieved) || !isInturnRelyer {
 			nonce, err := a.bscExecutor.GetNonce()
 			if err != nil {
@@ -157,21 +158,11 @@ func (a *GreenfieldAssembler) process(channelId types.ChannelId, inturnRelayer *
 			return nil
 		}
 	} else {
-		if channelId == common.ZkmeSBTChannelId {
-			endSequence, err = a.daoManager.GreenfieldDao.GetLatestSequenceByChannelId(channelId)
-			if err != nil {
-				return fmt.Errorf("faield to get latest sequence from DB, err=%s", err.Error())
-			}
-			if endSequence == -1 {
-				endSequence = 0
-			}
-		} else {
-			endSeq, err := a.greenfieldExecutor.GetNextSendSequenceForChannelWithRetry(a.getDestChainId(), channelId)
-			if err != nil {
-				return fmt.Errorf("failed to get next send sequence, err=%s", err.Error())
-			}
-			endSequence = int64(endSeq)
+		endSeq, err := a.greenfieldExecutor.GetNextSendSequenceForChannelWithRetry(a.getDestChainId(), channelId)
+		if err != nil {
+			return fmt.Errorf("failed to get next send sequence, err=%s", err.Error())
 		}
+		endSequence = int64(endSeq)
 	}
 
 	logging.Logger.Debugf("channel %d start seq and end enq are %d and %d", channelId, startSeq, endSequence)
@@ -201,7 +192,8 @@ func (a *GreenfieldAssembler) process(channelId types.ChannelId, inturnRelayer *
 			return fmt.Errorf("faield to get transaction by cahnnel id %d and sequence %d from DB, err=%s", channelId, i, err.Error())
 		}
 		if (*tx == model.GreenfieldRelayTransaction{}) {
-			return nil
+			// return nil
+			continue
 		}
 
 		if time.Since(time.Unix(tx.TxTime, 0)).Seconds() > common.TxDelayAlertThreshHold {
