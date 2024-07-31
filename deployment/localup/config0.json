@@ -4,7 +4,7 @@
     "aws_region": "",
     "aws_secret_name": "",
     "aws_bls_secret_name": "",
-    "rpc_addrs": ["http://127.0.0.1:26657"],
+    "rpc_addrs": ["http://154.48.244.41:26657"],
     "private_key": "b8736d8ebe9f17d99e90d20d5d69ee42b2725dc13dd71b567480831f0e22d23f",
     "bls_private_key": "65fa329fdd931b85c2145450f01b1121e7d5ed1db20f884abfddf22f0d06a88c",
     "chain_id": 5151,
@@ -25,7 +25,7 @@
     "gas_limit": 4700000,
     "gas_price": 10000000000,
     "number_of_blocks_for_finality": 2,
-    "start_height": 41929170,
+    "start_height": 42560205,
     "chain_id": 97
   },
   "relay_config": {
