@@ -5,10 +5,10 @@
     "aws_secret_name": "",
     "aws_bls_secret_name": "",
     "rpc_addrs": [
-      "http://154.48.244.41:26657"
+      "http://154.48.244.41:26659"
     ],
-    "private_key": "3c7ea76ddb53539174caae1dd960b308981933bd6e95196556ba29063200df9c",
-    "bls_private_key": "05c1fdf25be60eb8b56df86af137e090680edeb4bb232273d488f5ef871324c0",
+    "private_key": "891e0b7a4d7d350cf7af59d0fd8fe2cbadad79ce918b51014655f0af74cc2a0d",
+    "bls_private_key": "4ebc2fe96f2ced7eab7d9f8a5cce34cce432dbaba92d36b3c25baacedbc61d0f",
     "chain_id": 5151,
     "start_height": 1,
     "monitor_channel_list": [
@@ -64,7 +64,7 @@
     "compress": false
   },
   "admin_config": {
-    "port": 8080
+    "port": 8082
   },
   "db_config": {
     "dialect": "mysql",
