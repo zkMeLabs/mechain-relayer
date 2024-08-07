@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"time"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	oracletypes "github.com/cosmos/cosmos-sdk/x/oracle/types"
-	"time"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 
 	"github.com/bnb-chain/greenfield-relayer/common"
 	"github.com/bnb-chain/greenfield-relayer/config"
@@ -19,6 +22,50 @@ import (
 	"github.com/bnb-chain/greenfield-relayer/types"
 	"github.com/bnb-chain/greenfield-relayer/vote"
 )
+
+const (
+	OperationZkmeSBTACK uint8 = 5
+
+	STATUS_SUCCESS uint32 = 0
+	STATUS_FAILED  uint32 = 1
+
+	TYPES_MIRROR_FAILED  uint8 = 2
+	TYPES_MIRROR_SUCCEED uint8 = 3
+
+	ORACLETYPES_PACKAGES_PREFIX = 8 // rlp.EncodeToBytes([]oracletypes.Package)
+)
+
+var (
+	generalZkmeSBTAckPackageType, _ = abi.NewType("tuple", "", []abi.ArgumentMarshaling{
+		{Name: "Toaddrs", Type: "address[]"},
+		{Name: "Status", Type: "uint32"},
+	})
+
+	generalZkmeSBTAckPackageArgs = abi.Arguments{
+		{Type: generalZkmeSBTAckPackageType},
+	}
+)
+
+type ZkmeSBTAckPackage struct {
+	Toaddrs []sdk.AccAddress
+	Status  uint32
+}
+
+type ZkmeSBTAckPackageStruct struct {
+	Toaddrs []ethcommon.Address
+	Status  uint32
+}
+
+func (pkg *ZkmeSBTAckPackage) Serialize() ([]byte, error) {
+	addrs := make([]ethcommon.Address, len(pkg.Toaddrs))
+	for i, addr := range pkg.Toaddrs {
+		addrs[i] = ethcommon.BytesToAddress(addr)
+	}
+	return generalZkmeSBTAckPackageArgs.Pack(&ZkmeSBTAckPackageStruct{
+		addrs,
+		pkg.Status,
+	})
+}
 
 type BSCAssembler struct {
 	config                      *config.Config
@@ -138,7 +185,7 @@ func (a *BSCAssembler) process(channelId types.ChannelId) error {
 		}
 		endSequence = int64(endSeq)
 	}
-	logging.Logger.Debugf("start seq and end enq are %d and %d", startSeq, endSequence)
+	logging.Logger.Debugf("start seq and end enq are %d and %d, isInturnRelyer=%t", startSeq, endSequence, isInturnRelyer)
 
 	if len(a.alertSet) > 0 {
 		var maxTxSeqOfAlert uint64
@@ -159,8 +206,10 @@ func (a *BSCAssembler) process(channelId types.ChannelId) error {
 		if err != nil {
 			return fmt.Errorf("faield to get packages by oracle sequence %d from DB, err=%s", i, err.Error())
 		}
+		logging.Logger.Debugf("len(pkgs):%d, index:%d", len(pkgs), i)
 		if len(pkgs) == 0 {
-			return nil
+			// return nil
+			continue
 		}
 		status := pkgs[0].Status
 		pkgTime := pkgs[0].TxTime
@@ -204,6 +253,34 @@ func (a *BSCAssembler) process(channelId types.ChannelId) error {
 	return nil
 }
 
+type ZkmeSBTAckCrossChainPackage struct {
+	OperationType uint8
+	Package       []byte
+}
+
+func DeserializeRawZkmeSBTAckPackage(serializedPackage []byte) (*ZkmeSBTAckCrossChainPackage, error) {
+	tp := ZkmeSBTAckCrossChainPackage{
+		OperationType: serializedPackage[0],
+		Package:       serializedPackage[1:],
+	}
+	return &tp, nil
+}
+
+func DeserializeZkmeSBTAckPackage(serializedPackage []byte) (interface{}, error) {
+	unpacked, err := generalZkmeSBTAckPackageArgs.Unpack(serializedPackage)
+	if err != nil {
+		return nil, fmt.Errorf("deserialize general zkmesbt ack package failed")
+	}
+
+	unpackedStruct := abi.ConvertType(unpacked[0], ZkmeSBTAckPackageStruct{})
+	tp, ok := unpackedStruct.(ZkmeSBTAckPackageStruct)
+	if !ok {
+		return nil, fmt.Errorf("reflect zkmesbt ack package failed")
+	}
+
+	return &tp, nil
+}
+
 func (a *BSCAssembler) processPkgs(client *executor.GreenfieldClient, pkgs []*model.BscRelayPackage, channelId uint8, sequence uint64, nonce uint64, isInturnRelyer bool) error {
 	// Get votes result for a packages, which are already validated and qualified to aggregate sig
 	votes, err := a.daoManager.VoteDao.GetVotesByChannelIdAndSequence(channelId, sequence)
@@ -220,12 +297,44 @@ func (a *BSCAssembler) processPkgs(client *executor.GreenfieldClient, pkgs []*mo
 		return fmt.Errorf("failed to aggregate signature, err=%s", err.Error())
 	}
 
-	txHash, err := a.greenfieldExecutor.ClaimPackages(client, votes[0].ClaimPayload, aggregatedSignature, valBitSet.Bytes(), pkgs[0].TxTime, sequence, nonce)
+	pack, err := DeserializeRawZkmeSBTAckPackage(votes[0].ClaimPayload[sdk.AckPackageHeaderLength+ORACLETYPES_PACKAGES_PREFIX:])
+	if err != nil {
+		return fmt.Errorf("failed to deserialize raw crosschain package, err=%s", err.Error())
+	}
+	var txHash string
+	logging.Logger.Debugf("pack.OperationType %d", pack.OperationType)
+	if pack.OperationType == OperationZkmeSBTACK {
+		tp, err := DeserializeZkmeSBTAckPackage(pack.Package)
+		if err != nil {
+			panic("deserialize zkmesbt cross chain package error")
+		}
+		switch zkmesbtack := tp.(type) {
+		case *ZkmeSBTAckPackageStruct:
+			// TODO: for _,addr := zkmesbtack.Toaddrs{}
+			var status uint8
+			if zkmesbtack.Status == STATUS_SUCCESS {
+				status = TYPES_MIRROR_SUCCEED
+			} else {
+				status = TYPES_MIRROR_FAILED
+			}
+			tx, err := a.greenfieldExecutor.CallZkmeSBTAckMintedContract(uint32(a.getChainId()), zkmesbtack.Toaddrs[0], status, nonce)
+			txHash = tx.String()
+			if err != nil {
+				return fmt.Errorf("failed to Call ZkmeSBTAckMintedContract, txHash=%s, err=%s", txHash, err.Error())
+			}
+			logging.Logger.Debugf("CallZkmeSBTAckMintedContract chainid=%d, toaddrs[0]=%s, status=%d, nonce=%d", a.getChainId(), zkmesbtack.Toaddrs[0].String(), status, nonce)
+		default:
+			panic("unknown zkmesbt cross chain ack package type")
+		}
+	}
+	// zkmesbt should also IncrReceiveSequence
+	txHash, err = a.greenfieldExecutor.ClaimPackages(client, votes[0].ClaimPayload[ORACLETYPES_PACKAGES_PREFIX:], aggregatedSignature, valBitSet.Bytes(), pkgs[0].TxTime, sequence, nonce)
+
 	if err != nil {
 		return fmt.Errorf("failed to claim packages, txHash=%s, err=%s", txHash, err.Error())
 	}
-
 	logging.Logger.Infof("claimed transaction with oracle_sequence=%d, txHash=%s", sequence, txHash)
+
 	var pkgIds []int64
 	for _, p := range pkgs {
 		pkgIds = append(pkgIds, p.Id)

@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"sync"
 	"time"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/bnb-chain/greenfield-relayer/common"
 	"github.com/bnb-chain/greenfield-relayer/config"
@@ -78,6 +79,7 @@ func (a *GreenfieldAssembler) AssembleTransactionsLoop() {
 		isInturnRelyer := bytes.Equal(a.blsPubKey, inturnRelayerPubkey)
 		a.metricService.SetBSCInturnRelayerMetrics(isInturnRelyer, inturnRelayer.Start, inturnRelayer.End)
 
+		logging.Logger.Debugf("----------------------------------------------------------------------------isInturnRelyer=%t", isInturnRelyer)
 		if (isInturnRelyer && !a.relayerNonceStatus.HasRetrieved) || !isInturnRelyer {
 			nonce, err := a.bscExecutor.GetNonce()
 			if err != nil {
@@ -158,7 +160,7 @@ func (a *GreenfieldAssembler) process(channelId types.ChannelId, inturnRelayer *
 	} else {
 		endSeq, err := a.greenfieldExecutor.GetNextSendSequenceForChannelWithRetry(a.getDestChainId(), channelId)
 		if err != nil {
-			return fmt.Errorf("faield to get next send sequence, err=%s", err.Error())
+			return fmt.Errorf("failed to get next send sequence, err=%s", err.Error())
 		}
 		endSequence = int64(endSeq)
 	}
@@ -190,7 +192,8 @@ func (a *GreenfieldAssembler) process(channelId types.ChannelId, inturnRelayer *
 			return fmt.Errorf("faield to get transaction by cahnnel id %d and sequence %d from DB, err=%s", channelId, i, err.Error())
 		}
 		if (*tx == model.GreenfieldRelayTransaction{}) {
-			return nil
+			// return nil
+			continue
 		}
 
 		if time.Since(time.Unix(tx.TxTime, 0)).Seconds() > common.TxDelayAlertThreshHold {

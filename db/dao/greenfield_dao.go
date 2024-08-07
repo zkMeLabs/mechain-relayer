@@ -58,6 +58,20 @@ func (d *GreenfieldDao) GetTransactionByChannelIdAndSequence(channelId types.Cha
 	return &tx, nil
 }
 
+// for zkmeSBT
+// func (d *GreenfieldDao) GetLatestSequenceByChannelId(channelId types.ChannelId) (int64, error) {
+// 	var result sql.NullInt64
+// 	res := d.DB.Table("greenfield_relay_transaction").Select("MAX(sequence)").Where("channel_id = ?", channelId)
+// 	err := res.Row().Scan(&result)
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	if !result.Valid {
+// 		return -1, nil
+// 	}
+// 	return result.Int64 + 1, nil
+// }
+
 func (d *GreenfieldDao) GetLatestSequenceByChannelIdAndStatus(channelId types.ChannelId, status db.TxStatus) (int64, error) {
 	var result sql.NullInt64
 	res := d.DB.Table("greenfield_relay_transaction").Select("MAX(sequence)").Where("channel_id = ? and status = ?", channelId, status)

@@ -123,6 +123,7 @@ type RelayConfig struct {
 	CrossChainContractAddr              string `json:"cross_chain_contract_addr"`
 	GreenfieldLightClientContractAddr   string `json:"greenfield_light_client_contract_addr"`
 	RelayerHubContractAddr              string `json:"relayer_hub_contract_addr"`
+	SrcZkmeSBTContractAddr              string `json:"src_zkmesbt_contract_addr"`
 }
 
 func (cfg *RelayConfig) Validate() {

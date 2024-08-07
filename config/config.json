@@ -9,7 +9,7 @@
     "bls_private_key": "65fa329fdd931b85c2145450f01b1121e7d5ed1db20f884abfddf22f0d06a88c",
     "chain_id": 5151,
     "start_height": 36650,
-    "monitor_channel_list": [1, 2, 3, 4, 5, 6],
+    "monitor_channel_list": [1, 2, 3, 4, 5, 6, 10],
     "gas_limit": 500000,
     "fee_amount": 5000000000000,
     "chain_id_string": "mechain_5151-1",
@@ -35,7 +35,8 @@
     "bsc_sequence_update_latency": 12,
     "cross_chain_contract_addr": "0x1eFF84B81f19a222C20eB0d0b71aB4C66F05E734",
     "greenfield_light_client_contract_addr": "0xEf91e8A6441a8FEB2c5238b8DB692858C33d1046",
-    "relayer_hub_contract_addr": "0xEcA6251E41FEc0EBC679dE508bDFdB32d074b3Dc"
+    "relayer_hub_contract_addr": "0xEcA6251E41FEc0EBC679dE508bDFdB32d074b3Dc",
+    "src_zkmesbt_contract_addr": "0x6A0830C62255A63F3c343B4BBBcF9f3808408177"
   },
   "vote_pool_config": {
     "broadcast_interval_in_millisecond": 1000,
