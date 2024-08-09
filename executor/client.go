@@ -2,6 +2,10 @@ package executor
 
 import (
 	"context"
+	"fmt"
+	"net"
+	"net/url"
+	"strconv"
 	"sync"
 	"time"
 
@@ -24,6 +28,25 @@ type GnfdCompositeClients struct {
 	clients []*GreenfieldClient
 }
 
+func getEthRPCAddress(rpcAddr string) string {
+	u, err := url.Parse(rpcAddr)
+	if err != nil {
+		return rpcAddr
+	}
+	host, portStr, _ := net.SplitHostPort(u.Host)
+	if portStr == "" {
+		return fmt.Sprintf("%s://%s:8545%s", u.Scheme, host, u.Path)
+	}
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		return rpcAddr
+	}
+	if port != 8545 {
+		return fmt.Sprintf("%s://%s:8545%s", u.Scheme, host, u.Path)
+	}
+	return rpcAddr
+}
+
 func NewGnfdCompositClients(rpcAddrs []string, chainId string, account *types.Account, useWebsocket bool, srcZkmeSBTContractAddr string) GnfdCompositeClients {
 	clients := make([]*GreenfieldClient, 0)
 	for i := 0; i < len(rpcAddrs); i++ {
@@ -32,8 +55,8 @@ func NewGnfdCompositClients(rpcAddrs []string, chainId string, account *types.Ac
 			logging.Logger.Errorf("rpc node %s is not available", rpcAddrs[i])
 			continue
 		}
-		// TODO:
-		ethClient, err := ethclient.Dial("http://127.0.0.1:8545")
+
+		ethClient, err := ethclient.Dial(getEthRPCAddress(rpcAddrs[0]))
 		if err != nil {
 			panic("new eth client error")
 		}
