@@ -30,9 +30,9 @@ func BitSetToBigInt(set *bitset.BitSet) *big.Int {
 	return new(big.Int).SetBytes(bts)
 }
 
-func Uint16ToBytes(num uint16) []byte {
-	bt := make([]byte, 2)
-	binary.BigEndian.PutUint16(bt, num)
+func Uint32ToBytes(num uint32) []byte {
+	bt := make([]byte, 4)
+	binary.BigEndian.PutUint32(bt, num)
 	return bt
 }
 

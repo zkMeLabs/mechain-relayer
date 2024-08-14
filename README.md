@@ -165,7 +165,10 @@ docker run --name gnfd-mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -d mysql:8
 Create schema in MySQL client:
 
 ```mysql
-CREATE SCHEMA IF NOT EXISTS `greenfield-relayer` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+CREATE SCHEMA IF NOT EXISTS `greenfield_relayer` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+CREATE SCHEMA IF NOT EXISTS `greenfield_relayer_polygon` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+CREATE SCHEMA IF NOT EXISTS `greenfield_relayer_linea` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+...
 ```
 
 ### Fill in config file
