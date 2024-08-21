@@ -20,6 +20,14 @@ const (
 	ZkmeSBTChannelId             types.ChannelId = 10
 	SleepTimeAfterSyncLightBlock                 = 15 * time.Second
 
+	OpBNBChainId    uint64 = 204
+	PolygonChainId  uint64 = 137
+	ScrollChainId   uint64 = 534352 // 534352 overflows uint16
+	LineaChainId    uint64 = 59144
+	MantleChainId   uint64 = 5000
+	ArbitrumChainId uint64 = 42161
+	OptimismChainId uint64 = 10
+
 	ListenerPauseTime  = 3 * time.Second
 	ErrorRetryInterval = 1 * time.Second
 	AssembleInterval   = 500 * time.Millisecond

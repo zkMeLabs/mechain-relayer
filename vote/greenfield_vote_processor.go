@@ -322,8 +322,8 @@ func (p *GreenfieldVoteProcessor) isVotePubKeyValid(v *votepool.Vote, validators
 func (p *GreenfieldVoteProcessor) aggregatePayloadForTx(tx *model.GreenfieldRelayTransaction) ([]byte, error) {
 	var aggregatedPayload []byte
 
-	aggregatedPayload = append(aggregatedPayload, util.Uint16ToBytes(uint16(tx.SrcChainId))...)
-	aggregatedPayload = append(aggregatedPayload, util.Uint16ToBytes(uint16(tx.DestChainId))...)
+	aggregatedPayload = append(aggregatedPayload, util.Uint32ToBytes(tx.SrcChainId)...)
+	aggregatedPayload = append(aggregatedPayload, util.Uint32ToBytes(tx.DestChainId)...)
 	aggregatedPayload = append(aggregatedPayload, tx.ChannelId)
 	aggregatedPayload = append(aggregatedPayload, util.Uint64ToBytes(tx.Sequence)...)
 	aggregatedPayload = append(aggregatedPayload, uint8(tx.PackageType))

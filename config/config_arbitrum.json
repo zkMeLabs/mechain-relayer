@@ -4,11 +4,13 @@
     "aws_region": "",
     "aws_secret_name": "",
     "aws_bls_secret_name": "",
-    "rpc_addrs": ["http://127.0.0.1:26657"],
-    "private_key": "b8736d8ebe9f17d99e90d20d5d69ee42b2725dc13dd71b567480831f0e22d23f",
-    "bls_private_key": "65fa329fdd931b85c2145450f01b1121e7d5ed1db20f884abfddf22f0d06a88c",
+    "rpc_addrs": [
+      "http://127.0.0.1:26657"
+    ],
+    "private_key": "3c7ea76ddb53539174caae1dd960b308981933bd6e95196556ba29063200df9c",
+    "bls_private_key": "4af1a342016cea7a241bf8cec11e68963e03d38993002121c51bc961489c4e02",
     "chain_id": 5151,
-    "start_height": 36650,
+    "start_height": 4800,
     "monitor_channel_list": [1,2,3,4,5,6,10],
     "gas_limit": 500000,
     "fee_amount": 5000000000000,
@@ -16,27 +18,29 @@
     "use_websocket": true
   },
   "bsc_config": {
-    "op_bnb": false,
+    "op_bnb": true,
     "key_type": "local_private_key",
     "aws_region": "",
     "aws_secret_name": "",
-    "rpc_addrs": ["https://bsc-testnet-rpc.publicnode.com"],
-    "private_key": "b8736d8ebe9f17d99e90d20d5d69ee42b2725dc13dd71b567480831f0e22d23f",
+    "rpc_addrs": [
+      "https://api.stateless.solutions/arbitrum-one/v1/demo"
+    ],
+    "private_key": "3c7ea76ddb53539174caae1dd960b308981933bd6e95196556ba29063200df9c",
     "gas_limit": 4700000,
-    "gas_price": 10000000000,
+    "gas_price": 80000000,
     "number_of_blocks_for_finality": 2,
-    "start_height": 41929170,
-    "chain_id": 97
+    "start_height": 3552131,
+    "chain_id": 42161
   },
   "relay_config": {
     "bsc_to_greenfield_inturn_relayer_timeout": 40,
     "greenfield_to_bsc_inturn_relayer_timeout": 30,
     "greenfield_sequence_update_latency": 8,
     "bsc_sequence_update_latency": 12,
-    "cross_chain_contract_addr": "0x1eFF84B81f19a222C20eB0d0b71aB4C66F05E734",
-    "greenfield_light_client_contract_addr": "0xEf91e8A6441a8FEB2c5238b8DB692858C33d1046",
-    "relayer_hub_contract_addr": "0xEcA6251E41FEc0EBC679dE508bDFdB32d074b3Dc",
-    "src_zkmesbt_contract_addr": "0x6A0830C62255A63F3c343B4BBBcF9f3808408177"
+    "cross_chain_contract_addr": "0x259Bd4D61b888180d4dF601b27b47bdA38b92Caf",
+    "greenfield_light_client_contract_addr": "0xE3a024eb1FB7D839c59C0E499445EfF1555d3ca9",
+    "relayer_hub_contract_addr": "0xac5524516dB0beB7A9DE497afEeD3aA39BBEb4ae",
+    "src_zkmesbt_contract_addr": "0x2088Fad82b220Ec778699c8EacaAE0f288BBA2af"
   },
   "vote_pool_config": {
     "broadcast_interval_in_millisecond": 1000,
@@ -63,7 +67,7 @@
     "aws_secret_name": "",
     "password": "mechain",
     "username": "root",
-    "url": "/greenfield_relayer?charset=utf8&parseTime=True&loc=Local",
+    "url": "/greenfield_relayer_arbitrum?charset=utf8&parseTime=True&loc=Local",
     "max_idle_conns": 10,
     "max_open_conns": 100
   },

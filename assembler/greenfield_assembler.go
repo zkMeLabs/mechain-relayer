@@ -79,7 +79,7 @@ func (a *GreenfieldAssembler) AssembleTransactionsLoop() {
 		isInturnRelyer := bytes.Equal(a.blsPubKey, inturnRelayerPubkey)
 		a.metricService.SetBSCInturnRelayerMetrics(isInturnRelyer, inturnRelayer.Start, inturnRelayer.End)
 
-		logging.Logger.Debugf("----------------------------------------------------------------------------isInturnRelyer=%t", isInturnRelyer)
+		// logging.Logger.Debugf("a.relayerNonceStatus.HasRetrieved=%t, isInturnRelyer=%t", a.relayerNonceStatus.HasRetrieved, isInturnRelyer)
 		if (isInturnRelyer && !a.relayerNonceStatus.HasRetrieved) || !isInturnRelyer {
 			nonce, err := a.bscExecutor.GetNonce()
 			if err != nil {
@@ -242,7 +242,7 @@ func (a *GreenfieldAssembler) processTx(tx *model.GreenfieldRelayTransaction, no
 
 	txHash, err := a.bscExecutor.CallBuildInSystemContract(aggregatedSignature, util.BitSetToBigInt(valBitSet), votes[0].ClaimPayload, nonce)
 	if err != nil {
-		return fmt.Errorf("failed to submit tx to BSC, txHash=%s, err=%s", txHash, err.Error())
+		return fmt.Errorf("failed to submit tx to BSC, nonce=%d, txHash=%s, err=%s", nonce, txHash, err.Error())
 	}
 
 	logging.Logger.Infof("relayed transaction with channel id %d and sequence %d, txHash=%s", tx.ChannelId, tx.Sequence, txHash)

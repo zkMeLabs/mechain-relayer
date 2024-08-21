@@ -107,9 +107,27 @@ func (a *BSCAssembler) assemblePackagesAndClaimForOracleChannel(channelId types.
 }
 
 func (a *BSCAssembler) process(channelId types.ChannelId) error {
-	claimSrcChain := oracletypes.CLAIM_SRC_CHAIN_BSC
-	if a.config.BSCConfig.IsOpCrossChain() {
+	claimSrcChain := oracletypes.CLAIM_SRC_CHAIN_UNSPECIFIED
+	// if a.config.BSCConfig.IsOpCrossChain() {
+	// 	claimSrcChain = oracletypes.CLAIM_SRC_CHAIN_OP_BNB
+	// }
+	switch a.config.BSCConfig.ChainId {
+	case common.OpBNBChainId:
 		claimSrcChain = oracletypes.CLAIM_SRC_CHAIN_OP_BNB
+	case common.PolygonChainId:
+		claimSrcChain = oracletypes.CLAIM_SRC_CHAIN_POLYGON
+	case common.ScrollChainId:
+		claimSrcChain = oracletypes.CLAIM_SRC_CHAIN_SCROLL
+	case common.LineaChainId:
+		claimSrcChain = oracletypes.CLAIM_SRC_CHAIN_LINEA
+	case common.MantleChainId:
+		claimSrcChain = oracletypes.CLAIM_SRC_CHAIN_MANTLE
+	case common.ArbitrumChainId:
+		claimSrcChain = oracletypes.CLAIM_SRC_CHAIN_ARBITRUM
+	case common.OptimismChainId:
+		claimSrcChain = oracletypes.CLAIM_SRC_CHAIN_OPTIMISM
+	default:
+		claimSrcChain = oracletypes.CLAIM_SRC_CHAIN_BSC
 	}
 	inturnRelayer, err := a.greenfieldExecutor.GetInturnRelayer(claimSrcChain)
 	if err != nil {
@@ -128,6 +146,8 @@ func (a *BSCAssembler) process(channelId types.ChannelId) error {
 	)
 
 	if isInturnRelyer {
+		// GetNextDeliveryOracleSequenceWithRetry, _ := a.bscExecutor.GetNextDeliveryOracleSequenceWithRetry(a.getChainId())
+		// logging.Logger.Debugf("a.inturnRelayerSequenceStatus.NextDeliverySeq %d, HasRetrieved %t, GetNextDeliveryOracleSequenceWithRetry %d", a.inturnRelayerSequenceStatus.NextDeliverySeq, a.inturnRelayerSequenceStatus.HasRetrieved, GetNextDeliveryOracleSequenceWithRetry)
 		if !a.inturnRelayerSequenceStatus.HasRetrieved {
 			// in-turn relayer get the start sequence from chain first time, it starts to relay after the sequence gets updated
 			now := time.Now().Unix()
@@ -245,6 +265,7 @@ func (a *BSCAssembler) process(channelId types.ChannelId) error {
 				return seqErr
 			}
 			a.inturnRelayerSequenceStatus.NextDeliverySeq = newNextDeliveryOracleSeq
+			// logging.Logger.Debugf("newNextDeliveryOracleSeq %d ", newNextDeliveryOracleSeq)
 			return err
 		}
 		logging.Logger.Infof("relayed packages with oracle sequence %d ", i)
@@ -304,8 +325,8 @@ func (a *BSCAssembler) processPkgs(client *executor.GreenfieldClient, pkgs []*mo
 	var txHash string
 	logging.Logger.Debugf("pack.OperationType %d", pack.OperationType)
 	if pack.OperationType == OperationZkmeSBTACK {
-		tp, err := DeserializeZkmeSBTAckPackage(pack.Package)
-		if err != nil {
+		tp, errs := DeserializeZkmeSBTAckPackage(pack.Package)
+		if errs != nil {
 			panic("deserialize zkmesbt cross chain package error")
 		}
 		switch zkmesbtack := tp.(type) {
@@ -317,19 +338,21 @@ func (a *BSCAssembler) processPkgs(client *executor.GreenfieldClient, pkgs []*mo
 			} else {
 				status = TYPES_MIRROR_FAILED
 			}
-			tx, err := a.greenfieldExecutor.CallZkmeSBTAckMintedContract(uint32(a.getChainId()), zkmesbtack.Toaddrs[0], status, nonce)
+			tx, errs := a.greenfieldExecutor.CallZkmeSBTAckMintedContract(uint32(a.getChainId()), zkmesbtack.Toaddrs[0], status, nonce)
 			txHash = tx.String()
-			if err != nil {
-				return fmt.Errorf("failed to Call ZkmeSBTAckMintedContract, txHash=%s, err=%s", txHash, err.Error())
+			if errs != nil {
+				return fmt.Errorf("failed to Call ZkmeSBTAckMintedContract, txHash=%s, err=%s", txHash, errs.Error())
 			}
-			logging.Logger.Debugf("CallZkmeSBTAckMintedContract chainid=%d, toaddrs[0]=%s, status=%d, nonce=%d", a.getChainId(), zkmesbtack.Toaddrs[0].String(), status, nonce)
+			// zkmesbt should also IncrReceiveSequence, use nonce + 1
+			txHash, err = a.greenfieldExecutor.ClaimPackages(client, votes[0].ClaimPayload, aggregatedSignature, valBitSet.Bytes(), pkgs[0].TxTime, sequence, nonce+1)
+			a.relayerNonce++
+			logging.Logger.Debugf("CallZkmeSBTAckMintedContract chainid=%d, toaddrs[0]=%s, status=%d, nonce=%d, sequence=%d", a.getChainId(), zkmesbtack.Toaddrs[0].String(), status, nonce, sequence)
 		default:
 			panic("unknown zkmesbt cross chain ack package type")
 		}
+	} else {
+		txHash, err = a.greenfieldExecutor.ClaimPackages(client, votes[0].ClaimPayload, aggregatedSignature, valBitSet.Bytes(), pkgs[0].TxTime, sequence, nonce)
 	}
-	// zkmesbt should also IncrReceiveSequence
-	txHash, err = a.greenfieldExecutor.ClaimPackages(client, votes[0].ClaimPayload[ORACLETYPES_PACKAGES_PREFIX:], aggregatedSignature, valBitSet.Bytes(), pkgs[0].TxTime, sequence, nonce)
-
 	if err != nil {
 		return fmt.Errorf("failed to claim packages, txHash=%s, err=%s", txHash, err.Error())
 	}
