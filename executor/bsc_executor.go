@@ -166,7 +166,7 @@ func (e *BSCExecutor) getCrossChainClient() *crosschain.Crosschain {
 	return e.bscClients[e.clientIdx].crossChainClient
 }
 
-func (e *BSCExecutor) getGreenfieldLightClient() *greenfieldlightclient.Greenfieldlightclient {
+func (e *BSCExecutor) GetGreenfieldLightClient() *greenfieldlightclient.Greenfieldlightclient {
 	e.mutex.RLock()
 	defer e.mutex.RUnlock()
 	return e.bscClients[e.clientIdx].greenfieldLightClient
@@ -377,7 +377,7 @@ func (e *BSCExecutor) SyncTendermintLightBlock(height uint64) (common.Hash, erro
 	if err != nil {
 		return common.Hash{}, err
 	}
-	tx, err := e.getGreenfieldLightClient().SyncLightBlock(txOpts, lightBlock, height)
+	tx, err := e.GetGreenfieldLightClient().SyncLightBlock(txOpts, lightBlock, height)
 	if err != nil {
 		return common.Hash{}, err
 	}
@@ -433,11 +433,11 @@ func (e *BSCExecutor) CallBuildInSystemContract(blsSignature []byte, validatorSe
 
 // QueryLatestValidators used for gnfd -> bsc
 func (e *BSCExecutor) QueryLatestValidators() ([]rtypes.Validator, error) {
-	relayerAddresses, err := e.getGreenfieldLightClient().GetRelayers(nil)
+	relayerAddresses, err := e.GetGreenfieldLightClient().GetRelayers(nil)
 	if err != nil {
 		return nil, err
 	}
-	blsKeys, err := e.getGreenfieldLightClient().BlsPubKeys(nil)
+	blsKeys, err := e.GetGreenfieldLightClient().BlsPubKeys(nil)
 	if err != nil {
 		return nil, err
 	}
@@ -482,7 +482,7 @@ func (e *BSCExecutor) GetLightClientLatestHeight() (uint64, error) {
 		Pending: true,
 		Context: ctx,
 	}
-	latestHeight, err := e.getGreenfieldLightClient().GnfdHeight(callOpts)
+	latestHeight, err := e.GetGreenfieldLightClient().GnfdHeight(callOpts)
 	if err != nil {
 		return 0, err
 	}
@@ -508,7 +508,7 @@ func (e *BSCExecutor) GetInturnRelayer() (*rtypes.InturnRelayer, error) {
 		Pending: true,
 		Context: ctx,
 	}
-	r, err := e.getGreenfieldLightClient().GetInturnRelayer(callOpts)
+	r, err := e.GetGreenfieldLightClient().GetInturnRelayer(callOpts)
 	if err != nil {
 		return nil, err
 	}
