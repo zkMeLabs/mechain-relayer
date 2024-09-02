@@ -1,4 +1,7 @@
-FROM golang:1.20-alpine as builder
+FROM golang:1.22.4-alpine as builder
+
+ENV CGO_CFLAGS "-O -D__BLST_PORTABLE__"
+ENV CGO_CFLAGS_ALLOW "-O -D__BLST_PORTABLE__"
 
 # Set up apk dependencies
 ENV PACKAGES make git libc-dev bash gcc linux-headers eudev-dev curl ca-certificates build-base
@@ -11,11 +14,6 @@ COPY . .
 
 # Install minimum necessary dependencies, remove packages
 RUN apk add --no-cache $PACKAGES
-
-# For Private REPO
-ARG GH_TOKEN=""
-RUN go env -w GOPRIVATE="github.com/bnb-chain/*"
-RUN git config --global url."https://${GH_TOKEN}@github.com".insteadOf "https://github.com"
 
 RUN make build
 

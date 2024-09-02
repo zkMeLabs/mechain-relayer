@@ -10,18 +10,17 @@ bin=${workspace}/../../build/${bin_name}
 
 function start() {
     size=$1
-    rm -rf "${workspace}"/.local
-    mkdir -p "${workspace}"/.local
     for ((i = 0; i < ${size}; i++)); do
         mkdir -p "${workspace}"/.local/relayer${i}/logs
-        nohup "${bin}" run --config-type local \
-            --config-path "${workspace}"/../../config/local/config_local_${i}.json \
-            --log_dir json >"${workspace}"/.local/relayer${i}/logs/relayer.log &
+        docker run --name mechain-relayer${i} -v /data/mechain-relayer/devint/.local/relayer${i}:/app/.greenfield-relayerd \
+          -d kevin2025/mechain-relayer ./${bin_name} run --config-type local \
+          --config-path .greenfield-relayerd/config.json \
+          --log_dir "json > .greenfield-relayerd/logs/relayer.log"
     done
 }
 
 function stop() {
-    ps -ef | grep ${bin_name} | awk '{print $2}' | xargs kill
+    docker rm -f $(docker ps -a | grep mechain-relayer | awk '{print $1}')
 }
 
 CMD=$1
