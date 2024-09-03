@@ -9,6 +9,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/0xPolygon/polygon-edge/bls"
 	"github.com/bnb-chain/greenfield-relayer/common"
 	"github.com/bnb-chain/greenfield-relayer/config"
 	"github.com/bnb-chain/greenfield-relayer/db"
@@ -20,7 +21,6 @@ import (
 	"github.com/bnb-chain/greenfield-relayer/types"
 	"github.com/bnb-chain/greenfield-relayer/util"
 	"github.com/bnb-chain/greenfield-relayer/vote"
-	"github.com/prysmaticlabs/prysm/crypto/bls"
 )
 
 type AlertKey struct {
@@ -166,7 +166,7 @@ func (a *GreenfieldAssembler) process(channelId types.ChannelId, inturnRelayer *
 		endSequence = int64(endSeq)
 	}
 
-	logging.Logger.Debugf("channel %d start seq and end enq are %d and %d", channelId, startSeq, endSequence)
+	logging.Logger.Debugf("channel %d start seq and end enq are %d and %d, isInturnRelyer=%t", channelId, startSeq, endSequence, isInturnRelyer)
 
 	// if the start seq larger than the largest alerts' related tx's seq, then clear all alerts because tx are delivered
 	a.alertSetMutex.Lock()
@@ -231,7 +231,9 @@ func (a *GreenfieldAssembler) processTx(tx *model.GreenfieldRelayTransaction, no
 	if err != nil {
 		return fmt.Errorf("failed to get votes for event with channel id %d and sequence %d", tx.ChannelId, tx.Sequence)
 	}
-
+	if len(votes) == 0 {
+		return fmt.Errorf("0 votes provided")
+	}
 	validators, err := a.bscExecutor.QueryCachedLatestValidators()
 	if err != nil {
 		return fmt.Errorf("failed to query cached validators, err=%s", err.Error())
@@ -241,7 +243,7 @@ func (a *GreenfieldAssembler) processTx(tx *model.GreenfieldRelayTransaction, no
 		return fmt.Errorf("failed to aggregate signature, err=%s", err.Error())
 	}
 
-	sig, errs := bls.SignatureFromBytes(aggregatedSignature)
+	sig, errs := bls.UnmarshalSignature(aggregatedSignature)
 	if errs != nil {
 		return fmt.Errorf("blsSignatureVerify invalid signature, errs=%s", errs.Error())
 	}
@@ -249,33 +251,33 @@ func (a *GreenfieldAssembler) processTx(tx *model.GreenfieldRelayTransaction, no
 	if errs != nil {
 		return fmt.Errorf("GetGreenfieldLightClient GetRelayers failed, errs=%s", errs.Error())
 	}
-	blsKeys, errs := a.bscExecutor.GetGreenfieldLightClient().BlsPubKeys(nil)
-	if err != nil {
-		return fmt.Errorf("GetGreenfieldLightClient BlsPubKeys failed, errs=%s", errs.Error())
-	}
-	nextRelayerBtsStartIdx := 0
-	RelayerBytesLength := 48
-	serializePubkeyLength := 96
-	// serializeSignatureLength := 192
+	// blsKeys, errs := a.bscExecutor.GetGreenfieldLightClient().BlsPubKeys(nil)
+	// if err != nil {
+	// 	return fmt.Errorf("GetGreenfieldLightClient BlsPubKeys failed, errs=%s", errs.Error())
+	// }
+	// nextRelayerBtsStartIdx := 0
+	// RelayerBytesLength := 128
+	// serializePubkeyLength := 128
+	// serializeSignatureLength := 64
 	pubKeyNumber := valBitSet.Count()
-	pubKeys := make([]byte, int(pubKeyNumber)*serializePubkeyLength)
-	for i, bitCount := 0, 0; i < len(relayerAddresses); i++ {
-		if valBitSet.Test(uint(i)) {
-			pubKeyBytes := blsKeys[nextRelayerBtsStartIdx : nextRelayerBtsStartIdx+RelayerBytesLength][:]
-			pubKey, errs := bls.PublicKeyFromBytes(pubKeyBytes)
-			if err != nil {
-				return fmt.Errorf("blsSignatureVerify invalid pubKey, errs=%s", errs.Error())
-			}
-			bitCount++
-			copy(pubKeys[bitCount*serializePubkeyLength:], pubKey.Serialize())
-			logging.Logger.Debugf("pubKey[%d]=%s, serialize=%s", i, hex.EncodeToString(pubKey.Marshal()), hex.EncodeToString(pubKey.Serialize()))
-		}
-		nextRelayerBtsStartIdx = nextRelayerBtsStartIdx + RelayerBytesLength
-	}
-	logging.Logger.Debugf("pubKeyNumber=%d, len(relayerAddresses)=%d, valBitSet=%v, SignatureFromBytes=%s, serialize=%s", pubKeyNumber, len(relayerAddresses), valBitSet.Bytes(), hex.EncodeToString(sig.Marshal()), hex.EncodeToString(sig.Serialize()))
-
-	sigPubkeys := append(sig.Serialize(), pubKeys...)
-	txHash, err := a.bscExecutor.CallBuildInSystemContract(sigPubkeys, util.BitSetToBigInt(valBitSet), votes[0].ClaimPayload, nonce)
+	// pubKeys := make([]byte, int(pubKeyNumber)*serializePubkeyLength)
+	// for i, bitCount := 0, 0; i < len(relayerAddresses); i++ {
+	// 	if valBitSet.Test(uint(i)) {
+	// 		pubKeyBytes := blsKeys[nextRelayerBtsStartIdx : nextRelayerBtsStartIdx+RelayerBytesLength][:]
+	// 		pubKey, errs := bls.UnmarshalPublicKey(pubKeyBytes)
+	// 		if err != nil {
+	// 			return fmt.Errorf("blsSignatureVerify invalid pubKey, errs=%s", errs.Error())
+	// 		}
+	// 		bitCount++
+	// 		copy(pubKeys[bitCount*serializePubkeyLength:], pubKey.Marshal())
+	// 		logging.Logger.Debugf("pubKey[%d]=%s, serialize=%s", i, hex.EncodeToString(pubKey.Marshal()), hex.EncodeToString(pubKey.Marshal()))
+	// 	}
+	// 	nextRelayerBtsStartIdx = nextRelayerBtsStartIdx + RelayerBytesLength
+	// }
+	signature, _ := sig.Marshal()
+	logging.Logger.Debugf("pubKeyNumber=%d, len(relayerAddresses)=%d, valBitSet=%v, SignatureFromBytes=%s, serialize=%s", pubKeyNumber, len(relayerAddresses), valBitSet.Bytes(), hex.EncodeToString(signature), hex.EncodeToString(signature))
+	// sigPubkeys := append(signature, pubKeys...)
+	txHash, err := a.bscExecutor.CallBuildInSystemContract(signature, util.BitSetToBigInt(valBitSet), votes[0].ClaimPayload, nonce)
 	if err != nil {
 		return fmt.Errorf("failed to submit tx to BSC, nonce=%d, txHash=%s, err=%s", nonce, txHash, err.Error())
 	}

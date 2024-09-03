@@ -30,7 +30,7 @@ const (
 	validatorPubkeyLength      uint64 = 32
 	validatorVotingPowerLength uint64 = 8
 	relayerAddressLength       uint64 = 20
-	relayerBlsKeyLength        uint64 = 48
+	relayerBlsKeyLength        uint64 = 128
 	maxConsensusStateLength    uint64 = 32 * (128 - 1) // FIXME：maximum validator quantity 99
 )
 
@@ -43,7 +43,7 @@ type ConsensusState struct {
 
 // output:
 // | chainID   | height   | nextValidatorSetHash | [{validator pubkey, voting power, relayer address, relayer bls pubkey}] |
-// | 32 bytes  | 8 bytes  | 32 bytes             | [{32 bytes, 8 bytes, 20 bytes, 48 bytes}]                               |
+// | 32 bytes  | 8 bytes  | 32 bytes             | [{32 bytes, 8 bytes, 20 bytes, 128 bytes}]                               |
 func (cs ConsensusState) encodeConsensusState() ([]byte, error) {
 	validatorSetLength := uint64(len(cs.ValidatorSet.Validators))
 	singleValidatorBytesLength := validatorPubkeyLength + validatorVotingPowerLength + relayerAddressLength + relayerBlsKeyLength

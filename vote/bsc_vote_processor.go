@@ -165,6 +165,7 @@ func (p *BSCVoteProcessor) signAndBroadcast() error {
 
 		err = p.daoManager.BSCDao.DB.Transaction(func(dbTx *gorm.DB) error {
 			e := dao.UpdateBatchPackagesStatus(dbTx, pkgIds, db.SelfVoted)
+			logging.Logger.Debugf("bsc UpdateBatchPackagesStatus pkgIds %d err %s", pkgIds, e)
 			if e != nil {
 				return e
 			}

@@ -13,7 +13,7 @@ type Vote struct {
 	EventHash    []byte `gorm:"NOT NULL"`
 	Sequence     uint64 `gorm:"NOT NULL;uniqueIndex:idx_vote_channel_id_sequence_pub_key"`
 	ChannelId    uint8  `gorm:"NOT NULL;uniqueIndex:idx_vote_channel_id_sequence_pub_key"`
-	PubKey       string `gorm:"NOT NULL;uniqueIndex:idx_vote_channel_id_sequence_pub_key;size:96"`
+	PubKey       string `gorm:"NOT NULL;uniqueIndex:idx_vote_channel_id_sequence_pub_key;size:256"`
 	CreatedTime  int64  `gorm:"NOT NULL"`
 }
 

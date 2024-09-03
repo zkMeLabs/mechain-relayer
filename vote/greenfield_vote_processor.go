@@ -111,7 +111,9 @@ func (p *GreenfieldVoteProcessor) signAndBroadcast() error {
 
 		// After vote submitted to vote pool, persist vote Data and update the status of tx to 'SELF_VOTED'.
 		err = p.daoManager.GreenfieldDao.DB.Transaction(func(dbTx *gorm.DB) error {
-			if e := dao.UpdateTransactionStatus(dbTx, tx.Id, db.SelfVoted); e != nil {
+			e := dao.UpdateTransactionStatus(dbTx, tx.Id, db.SelfVoted)
+			logging.Logger.Debugf("UpdateBatchPackagesStatus tx.Id %d err %s", tx.Id, e)
+			if e != nil {
 				return e
 			}
 			exist, e := dao.IsVoteExist(dbTx, tx.ChannelId, tx.Sequence, hex.EncodeToString(v.PubKey[:]))

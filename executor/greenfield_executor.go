@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/0xPolygon/polygon-edge/bls"
 	"github.com/avast/retry-go/v4"
 	ctypes "github.com/cometbft/cometbft/rpc/core/types"
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -21,7 +22,6 @@ import (
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/prysmaticlabs/prysm/crypto/bls/blst"
 	"github.com/spf13/viper"
 
 	sdktypes "github.com/bnb-chain/greenfield-go-sdk/types"
@@ -58,9 +58,11 @@ func NewGreenfieldExecutor(cfg *config.Config) *GreenfieldExecutor {
 	if blsPrivKeyStr == "" {
 		blsPrivKeyStr = getGreenfieldBlsPrivateKey(&cfg.GreenfieldConfig)
 	}
-	blsPrivKeyBts := ethcommon.Hex2Bytes(blsPrivKeyStr)
-
-	blsPrivKey, err := blst.SecretKeyFromBytes(blsPrivKeyBts)
+	blsPrivKeyBts, err := hex.DecodeString(blsPrivKeyStr)
+	if err != nil {
+		panic(err)
+	}
+	blsPrivKey, err := bls.UnmarshalPrivateKey(blsPrivKeyBts)
 	if err != nil {
 		panic(err)
 	}
