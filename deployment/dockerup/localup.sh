@@ -28,14 +28,17 @@ function display_help() {
 #############################################################
 function make_config() {
     size=$1
+    rm -rf "${workspace}"/.local
+    mkdir -p "${workspace}"/.local
     RELAYER_FILE="${project}/relayer.yaml"
     CONFIG_FILE="${workspace}/config.json"
 
     for i in {0..3}; do
+        mkdir -p "${workspace}"/.local/relayer"${i}"/logs
         bls_priv_key=$(grep "validator_bls$i bls_priv_key" "$RELAYER_FILE" | awk '{print $3}')
         relayer_key=$(grep "relayer$i relayer_key" "$RELAYER_FILE" | awk '{print $3}')
 
-        OUTPUT_FILE="${workspace}/config${i}.json"
+        OUTPUT_FILE="${workspace}/.local/relayer${i}/config.json"
         jq --arg bls_priv_key "$bls_priv_key" \
             --arg relayer_key "$relayer_key" \
             '.greenfield_config.bls_private_key = $bls_priv_key |
@@ -49,10 +52,7 @@ function make_config() {
 
 function start() {
     size=$1
-    rm -rf "${workspace}"/.local
-    mkdir -p "${workspace}"/.local
     for ((i = 0; i < ${size}; i++)); do
-        mkdir -p "${workspace}"/.local/relayer${i}/logs
         nohup "${bin}" run --config-type local \
             --config-path "${workspace}"/../../config/local/config_local_${i}.json \
             --log_dir json >"${workspace}"/.local/relayer${i}/logs/relayer.log &
