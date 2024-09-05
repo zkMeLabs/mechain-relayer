@@ -1,0 +1,85 @@
+{
+  "greenfield_config": {
+    "key_type": "local_private_key",
+    "aws_region": "",
+    "aws_secret_name": "",
+    "aws_bls_secret_name": "",
+    "rpc_addrs": [
+      "http://154.48.244.41:26657"
+    ],
+    "private_key": "",
+    "bls_private_key": "",
+    "chain_id": 5151,
+    "start_height": 36650,
+    "monitor_channel_list": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "gas_limit": 500000,
+    "fee_amount": 5000000000000,
+    "chain_id_string": "mechain_5151-1",
+    "use_websocket": true
+  },
+  "bsc_config": {
+    "op_bnb": false,
+    "key_type": "local_private_key",
+    "aws_region": "",
+    "aws_secret_name": "",
+    "rpc_addrs": [
+      "https://bsc-testnet-rpc.publicnode.com"
+    ],
+    "private_key": "",
+    "gas_limit": 4700000,
+    "gas_price": 10000000000,
+    "number_of_blocks_for_finality": 2,
+    "start_height": 42560205,
+    "chain_id": 97
+  },
+  "relay_config": {
+    "bsc_to_greenfield_inturn_relayer_timeout": 40,
+    "greenfield_to_bsc_inturn_relayer_timeout": 30,
+    "greenfield_sequence_update_latency": 8,
+    "bsc_sequence_update_latency": 12,
+    "cross_chain_contract_addr": "0x1eFF84B81f19a222C20eB0d0b71aB4C66F05E734",
+    "greenfield_light_client_contract_addr": "0xEf91e8A6441a8FEB2c5238b8DB692858C33d1046",
+    "relayer_hub_contract_addr": "0xEcA6251E41FEc0EBC679dE508bDFdB32d074b3Dc"
+  },
+  "vote_pool_config": {
+    "broadcast_interval_in_millisecond": 1000,
+    "votes_batch_max_size_per_interval": 30,
+    "query_interval_in_millisecond": 1000
+  },
+  "log_config": {
+    "level": "DEBUG",
+    "filename": "",
+    "max_file_size_in_mb": 0,
+    "max_backups_of_log_files": 0,
+    "max_age_to_retain_log_files_in_days": 0,
+    "use_console_logger": true,
+    "use_file_logger": false,
+    "compress": false
+  },
+  "admin_config": {
+    "port": 8080
+  },
+  "db_config": {
+    "dialect": "mysql",
+    "key_type": "local_private_key",
+    "aws_region": "",
+    "aws_secret_name": "",
+    "password": "mechain",
+    "username": "root",
+    "url": "/greenfield_relayer?charset=utf8&parseTime=True&loc=Local",
+    "max_idle_conns": 10,
+    "max_open_conns": 100
+  },
+  "alert_config": {
+    "identity": "your_service_name",
+    "telegram_bot_id": "your_bot_id",
+    "telegram_chat_id": "your_chat_id"
+  }
+}
