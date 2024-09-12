@@ -4,3 +4,6 @@ build/*
 .local
 config/local/*
 integrationtest/config/*
+# deployment
+deployment/dockerup/validator.json
+deployment/dockerup/init_done

@@ -2,7 +2,6 @@ VERSION=$(shell git describe --tags)
 GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_COMMIT_DATE=$(shell git log -n1 --pretty='format:%cd' --date=format:'%Y%m%d')
 REPO=github.com/bnb-chain/greenfield-relayer
-IMAGE_NAME=ghcr.io/bnb-chain/greenfield-relayer
 
 ldflags = -X $(REPO)/version.AppVersion=$(VERSION) \
           -X $(REPO)/version.GitCommit=$(GIT_COMMIT) \
@@ -22,10 +21,7 @@ else
 	go install main.go
 endif
 
-build_docker:
-	docker build . -t ${IMAGE_NAME}
-
-.PHONY: build install build_docker
+.PHONY: build install 
 
 
 ###############################################################################
@@ -49,3 +45,31 @@ format:
 	bash scripts/format.sh
 
 .PHONY: lint lint-fix format
+
+###############################################################################
+###                        Docker                                           ###
+###############################################################################
+DOCKER := $(shell which docker)
+DOCKER_IMAGE := zkmelabs/mechain-relayer
+COMMIT_HASH := $(shell git rev-parse --short=7 HEAD)
+DOCKER_TAG := $(COMMIT_HASH)
+.PHONY: build-docker
+build-docker:
+	$(DOCKER) build --progress=plain -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
+	$(DOCKER) tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
+	$(DOCKER) tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:${COMMIT_HASH}
+
+###############################################################################
+###                        Docker Compose                                   ###
+###############################################################################
+build-dcf:
+	go run cmd/ci/main.go
+
+start-dc:
+	docker compose up -d
+	docker compose ps
+	
+stop-dc:
+	docker compose down --volumes
+
+.PHONY: build-dcf start-dc stop-dc	
