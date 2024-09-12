@@ -6,19 +6,13 @@ import (
 	"text/template"
 )
 
-type PortConfig struct {
-	AddressPort int
-	P2PPort     int
-	GRPCPort    int
-	GRPCWebPort int
-	RPCPort     int
-	EVMRPCPort  int
-	EVMWSPort   int
-}
-type NodeConfig struct {
-	NodeIndex int
-	PortConfig
-}
+type (
+	PortConfig struct{}
+	NodeConfig struct {
+		NodeIndex int
+		PortConfig
+	}
+)
 
 type ComposeConfig struct {
 	Nodes           []NodeConfig
@@ -74,7 +68,7 @@ services:
     depends_on:
       relayer-mysql:
         condition: service_healthy
-      init:
+      init-relayer:
         condition: service_healthy
     image: "{{$.Image}}"
     networks:
@@ -82,7 +76,10 @@ services:
     volumes:
       - "local-env:/app"
     command: >
+      bash -c "
+      sleep {{.NodeIndex}} &&
       greenfield-relayer run --config-type local --config-path /app/relayer{{.NodeIndex}}/config.json --log_dir json
+      "
 {{- end }}
 volumes:
   db-data:
@@ -93,17 +90,15 @@ networks:
 `
 
 func main() {
-	bp := PortConfig{	}
+	bp := PortConfig{}
 
 	numNodes := 4
 
 	var nodes []NodeConfig
 	for i := 0; i < numNodes; i++ {
 		nodes = append(nodes, NodeConfig{
-			NodeIndex: i,
-			PortConfig: PortConfig{
-		
-			},
+			NodeIndex:  i,
+			PortConfig: PortConfig{},
 		})
 	}
 
