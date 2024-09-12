@@ -23,15 +23,35 @@ type NodeConfig struct {
 type ComposeConfig struct {
 	Nodes           []NodeConfig
 	Image           string
+	MySQLImage      string
 	ProjectBasePath string
 	BasePorts       PortConfig
 }
 
 const dockerComposeTemplate = `
 services:
-  init:
+  relayer-mysql:
+    container_name: relayer-mysql
+    image: {{.MySQLImage}}
+    networks:
+      - mechain-network
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: mechain
+      MYSQL_DATABASE: greenfield_relayer
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  init-relayer:
     container_name: init-relayer
     image: "{{$.Image}}"
+    networks:
+      - mechain-network
     volumes:
       - "{{$.ProjectBasePath}}/deployment/dockerup:/workspace/deployment/dockerup:Z"
       - "local-env:/workspace/deployment/dockerup/.local"
@@ -52,26 +72,28 @@ services:
   rnode{{.NodeIndex}}:
     container_name: mechain-relayer-{{.NodeIndex}}
     depends_on:
+      relayer-mysql:
+        condition: service_healthy
       init:
         condition: service_healthy
     image: "{{$.Image}}"
+    networks:
+      - mechain-network
     volumes:
       - "local-env:/app"
     command: >
       greenfield-relayer run --config-type local --config-path /app/relayer{{.NodeIndex}}/config.json --log_dir json
 {{- end }}
+volumes:
+  db-data:
+  local-env:
+networks:
+  mechain-network:
+    external: true
 `
 
 func main() {
-	bp := PortConfig{
-		AddressPort: 28750,
-		P2PPort:     27750,
-		GRPCPort:    9090,
-		GRPCWebPort: 1317,
-		RPCPort:     26657,
-		EVMRPCPort:  8545,
-		EVMWSPort:   8546,
-	}
+	bp := PortConfig{	}
 
 	numNodes := 4
 
@@ -80,13 +102,7 @@ func main() {
 		nodes = append(nodes, NodeConfig{
 			NodeIndex: i,
 			PortConfig: PortConfig{
-				AddressPort: bp.AddressPort + i,
-				P2PPort:     bp.P2PPort + i,
-				GRPCPort:    bp.GRPCPort + i,
-				GRPCWebPort: bp.GRPCWebPort + i,
-				RPCPort:     bp.RPCPort + i,
-				EVMRPCPort:  bp.EVMRPCPort + i*2,
-				EVMWSPort:   bp.EVMWSPort + i*2,
+		
 			},
 		})
 	}
@@ -94,6 +110,7 @@ func main() {
 	config := ComposeConfig{
 		Nodes:           nodes,
 		Image:           "zkmelabs/mechain-relayer",
+		MySQLImage:      "mysql:8",
 		ProjectBasePath: ".",
 		BasePorts:       bp,
 	}

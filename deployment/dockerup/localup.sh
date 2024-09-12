@@ -30,7 +30,7 @@ function make_config() {
         mkdir -p "${local_env}/relayer${i}/logs"
         bls_priv_key=$(jq -r ".validator${i}.bls_key" "$RELAYER_FILE")
         relayer_key=$(jq -r ".validator${i}.relayer_key" "$RELAYER_FILE")
-        OUTPUT_FILE="${workspace}/.local/relayer${i}/config.json"
+        OUTPUT_FILE="${local_env}/relayer${i}/config.json"
         jq --arg bls_priv_key "$bls_priv_key" \
             --arg relayer_key "$relayer_key" \
             '.greenfield_config.bls_private_key = $bls_priv_key |

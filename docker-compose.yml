@@ -1,8 +1,26 @@
-
 services:
+  relayer-mysql:
+    container_name: relayer-mysql
+    image: mysql:8
+    networks:
+      - mechain-network
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: mechain
+      MYSQL_DATABASE: greenfield_relayer
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   init:
     container_name: init-relayer
     image: "zkmelabs/mechain-relayer"
+    networks:
+      - mechain-network
     volumes:
       - "./deployment/dockerup:/workspace/deployment/dockerup:Z"
       - "local-env:/workspace/deployment/dockerup/.local"
@@ -15,16 +33,24 @@ services:
       sleep infinity
       "
     healthcheck:
-      test: ["CMD-SHELL", "test -f /workspace/deployment/dockerup/init_done && echo 'OK' || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "test -f /workspace/deployment/dockerup/init_done && echo 'OK' || exit 1",
+        ]
       interval: 10s
       retries: 5
     restart: "on-failure"
   rnode0:
     container_name: mechain-relayer-0
     depends_on:
+      relayer-mysql:
+        condition: service_healthy
       init:
         condition: service_healthy
     image: "zkmelabs/mechain-relayer"
+    networks:
+      - mechain-network
     volumes:
       - "local-env:/app"
     command: >
@@ -32,9 +58,13 @@ services:
   rnode1:
     container_name: mechain-relayer-1
     depends_on:
+      relayer-mysql:
+        condition: service_healthy
       init:
         condition: service_healthy
     image: "zkmelabs/mechain-relayer"
+    networks:
+      - mechain-network
     volumes:
       - "local-env:/app"
     command: >
@@ -42,9 +72,13 @@ services:
   rnode2:
     container_name: mechain-relayer-2
     depends_on:
+      relayer-mysql:
+        condition: service_healthy
       init:
         condition: service_healthy
     image: "zkmelabs/mechain-relayer"
+    networks:
+      - mechain-network
     volumes:
       - "local-env:/app"
     command: >
@@ -52,10 +86,20 @@ services:
   rnode3:
     container_name: mechain-relayer-3
     depends_on:
+      relayer-mysql:
+        condition: service_healthy
       init:
         condition: service_healthy
     image: "zkmelabs/mechain-relayer"
+    networks:
+      - mechain-network
     volumes:
       - "local-env:/app"
     command: >
       greenfield-relayer run --config-type local --config-path /app/relayer3/config.json --log_dir json
+volumes:
+  db-data:
+  local-env:
+networks:
+  mechain-network:
+    external: true
