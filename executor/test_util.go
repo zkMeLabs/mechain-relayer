@@ -24,6 +24,9 @@ func InitExecutors() (*BSCExecutor, *GreenfieldExecutor) {
 }
 
 const (
+	uint64TypeLength             uint64 = 8
+	validateResultMetaDataLength uint64 = 32
+
 	chainIDLength              uint64 = 32
 	heightLength               uint64 = 8
 	validatorSetHashLength     uint64 = 32
@@ -31,7 +34,8 @@ const (
 	validatorVotingPowerLength uint64 = 8
 	relayerAddressLength       uint64 = 20
 	relayerBlsKeyLength        uint64 = 128
-	maxConsensusStateLength    uint64 = 32 * (128 - 1) // FIXME：maximum validator quantity 99
+	singleValidatorBytesLength uint64 = validatorPubkeyLength + validatorVotingPowerLength + relayerAddressLength + relayerBlsKeyLength
+	maxConsensusStateLength    uint64 = chainIDLength + heightLength + validatorSetHashLength + 99*singleValidatorBytesLength // Maximum validator quantity 99
 )
 
 type ConsensusState struct {
@@ -46,7 +50,6 @@ type ConsensusState struct {
 // | 32 bytes  | 8 bytes  | 32 bytes             | [{32 bytes, 8 bytes, 20 bytes, 128 bytes}]                               |
 func (cs ConsensusState) encodeConsensusState() ([]byte, error) {
 	validatorSetLength := uint64(len(cs.ValidatorSet.Validators))
-	singleValidatorBytesLength := validatorPubkeyLength + validatorVotingPowerLength + relayerAddressLength + relayerBlsKeyLength
 	serializeLength := chainIDLength + heightLength + validatorSetHashLength + validatorSetLength*singleValidatorBytesLength
 	if serializeLength > maxConsensusStateLength {
 		return nil, fmt.Errorf("too many validators %d, consensus state bytes should not exceed %d", len(cs.ValidatorSet.Validators), maxConsensusStateLength)

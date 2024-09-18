@@ -163,30 +163,26 @@ func (e *GreenfieldExecutor) GetLatestBlockHeight() (latestHeight uint64, err er
 	return uint64(e.gnfdClients.GetClient().Height), nil
 }
 
-func (e *GreenfieldExecutor) QueryTendermintLightBlock(height int64) ([]byte, error) {
+func (e *GreenfieldExecutor) QueryTendermintLightBlock(height int64) (tmtypes.LightBlock, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), RPCTimeout)
 	defer cancel()
 	validators, err := e.GetGnfdClient().GetValidatorsByHeight(ctx, height)
 	if err != nil {
-		return nil, err
+		return tmtypes.LightBlock{}, err
 	}
 	commit, err := e.GetGnfdClient().GetCommit(ctx, height)
 	if err != nil {
-		return nil, err
+		return tmtypes.LightBlock{}, err
 	}
 	validatorSet := tmtypes.NewValidatorSet(validators)
 	if err != nil {
-		return nil, err
+		return tmtypes.LightBlock{}, err
 	}
 	lightBlock := tmtypes.LightBlock{
 		SignedHeader: &commit.SignedHeader,
 		ValidatorSet: validatorSet,
 	}
-	protoBlock, err := lightBlock.ToProto()
-	if err != nil {
-		return nil, err
-	}
-	return protoBlock.Marshal()
+	return lightBlock, nil
 }
 
 // GetNextDeliverySequenceForChannelWithRetry calls dest chain(BSC) to return a sequence # which should be used.
