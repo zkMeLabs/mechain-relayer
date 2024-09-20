@@ -98,7 +98,17 @@ func (p *BSCVoteProcessor) signAndBroadcast() error {
 	// For packages with same oracle sequence, aggregate their payload and make single vote to votepool
 	pkgsGroupByOracleSeq := make(map[uint64][]*model.BscRelayPackage)
 	for _, pack := range pkgs {
-		pkgsGroupByOracleSeq[pack.OracleSequence] = append(pkgsGroupByOracleSeq[pack.OracleSequence], pack)
+		packSlice := pkgsGroupByOracleSeq[pack.OracleSequence]
+		exists := false
+		for _, existingPack := range packSlice {
+			if existingPack.TxIndex == pack.TxIndex {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			pkgsGroupByOracleSeq[pack.OracleSequence] = append(pkgsGroupByOracleSeq[pack.OracleSequence], pack)
+		}
 	}
 
 	for seq, pkgsForSeq := range pkgsGroupByOracleSeq {
@@ -164,16 +174,16 @@ func (p *BSCVoteProcessor) signAndBroadcast() error {
 		}
 
 		err = p.daoManager.BSCDao.DB.Transaction(func(dbTx *gorm.DB) error {
-			e := dao.UpdateBatchPackagesStatus(dbTx, pkgIds, db.SelfVoted)
-			logging.Logger.Debugf("bsc UpdateBatchPackagesStatus pkgIds %d err %s", pkgIds, e)
-			if e != nil {
-				return e
-			}
 			exist, e := dao.IsVoteExist(dbTx, uint8(channelId), seq, hex.EncodeToString(v.PubKey[:]))
 			if e != nil {
 				return e
 			}
 			if !exist {
+				e := dao.UpdateBatchPackagesStatus(dbTx, pkgIds, db.SelfVoted)
+				logging.Logger.Debugf("bsc UpdateBatchPackagesStatus pkgIds %d err %s", pkgIds, e)
+				if e != nil {
+					return e
+				}
 				e = dao.SaveVote(dbTx, EntityToDto(v, uint8(channelId), seq, encodedPayload, int64(leastSavedPkgHeight)))
 				if e != nil {
 					return e
