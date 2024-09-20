@@ -11,7 +11,7 @@ const (
 	SleepSecondForUpdateClient     = 10
 	DataSeedDenyServiceThreshold   = 60
 	RPCTimeout                     = 3 * time.Second
-	RelayerBytesLength             = 48
+	RelayerBytesLength             = 128
 	UpdateCachedValidatorsInterval = 1 * time.Minute
 	ClaimRewardInterval            = 1 * time.Minute
 	MaxTxSizeForFixGasLimit        = 32768 // 32kb

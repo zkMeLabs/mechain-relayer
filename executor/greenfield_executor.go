@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/0xPolygon/polygon-edge/bls"
 	"github.com/avast/retry-go/v4"
 	ctypes "github.com/cometbft/cometbft/rpc/core/types"
 	tmtypes "github.com/cometbft/cometbft/types"
@@ -21,7 +22,6 @@ import (
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/prysmaticlabs/prysm/crypto/bls/blst"
 	"github.com/spf13/viper"
 
 	sdktypes "github.com/bnb-chain/greenfield-go-sdk/types"
@@ -58,9 +58,11 @@ func NewGreenfieldExecutor(cfg *config.Config) *GreenfieldExecutor {
 	if blsPrivKeyStr == "" {
 		blsPrivKeyStr = getGreenfieldBlsPrivateKey(&cfg.GreenfieldConfig)
 	}
-	blsPrivKeyBts := ethcommon.Hex2Bytes(blsPrivKeyStr)
-
-	blsPrivKey, err := blst.SecretKeyFromBytes(blsPrivKeyBts)
+	blsPrivKeyBts, err := hex.DecodeString(blsPrivKeyStr)
+	if err != nil {
+		panic(err)
+	}
+	blsPrivKey, err := bls.UnmarshalPrivateKey(blsPrivKeyBts)
 	if err != nil {
 		panic(err)
 	}
@@ -161,30 +163,26 @@ func (e *GreenfieldExecutor) GetLatestBlockHeight() (latestHeight uint64, err er
 	return uint64(e.gnfdClients.GetClient().Height), nil
 }
 
-func (e *GreenfieldExecutor) QueryTendermintLightBlock(height int64) ([]byte, error) {
+func (e *GreenfieldExecutor) QueryTendermintLightBlock(height int64) (tmtypes.LightBlock, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), RPCTimeout)
 	defer cancel()
 	validators, err := e.GetGnfdClient().GetValidatorsByHeight(ctx, height)
 	if err != nil {
-		return nil, err
+		return tmtypes.LightBlock{}, err
 	}
 	commit, err := e.GetGnfdClient().GetCommit(ctx, height)
 	if err != nil {
-		return nil, err
+		return tmtypes.LightBlock{}, err
 	}
 	validatorSet := tmtypes.NewValidatorSet(validators)
 	if err != nil {
-		return nil, err
+		return tmtypes.LightBlock{}, err
 	}
 	lightBlock := tmtypes.LightBlock{
 		SignedHeader: &commit.SignedHeader,
 		ValidatorSet: validatorSet,
 	}
-	protoBlock, err := lightBlock.ToProto()
-	if err != nil {
-		return nil, err
-	}
-	return protoBlock.Marshal()
+	return lightBlock, nil
 }
 
 // GetNextDeliverySequenceForChannelWithRetry calls dest chain(BSC) to return a sequence # which should be used.

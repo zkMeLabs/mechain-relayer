@@ -308,6 +308,9 @@ func (a *BSCAssembler) processPkgs(client *executor.GreenfieldClient, pkgs []*mo
 	if err != nil {
 		return fmt.Errorf("failed to get votes result for packages for channel %d and sequence %d", channelId, sequence)
 	}
+	if len(votes) == 0 {
+		return fmt.Errorf("0 votes provided")
+	}
 	validators, err := a.greenfieldExecutor.QueryCachedLatestValidators()
 	if err != nil {
 		return fmt.Errorf("failed to query cached validators, err=%s", err.Error())

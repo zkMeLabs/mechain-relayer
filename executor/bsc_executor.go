@@ -1,16 +1,22 @@
 package executor
 
 import (
+	"bytes"
 	"context"
 	"crypto/ecdsa"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 	"sync"
 	"time"
 
 	"github.com/avast/retry-go/v4"
+	"github.com/cometbft/cometbft/crypto/ed25519"
+	"github.com/cometbft/cometbft/light"
+	tmtypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -144,6 +150,138 @@ func NewBSCExecutor(cfg *config.Config, metricService *metric.MetricService) *BS
 	}
 }
 
+func DecodeConsensusState(input []byte) (ConsensusState, error) {
+	minimumLength := chainIDLength + heightLength + validatorSetHashLength
+	inputLen := uint64(len(input))
+	if (inputLen-minimumLength)%singleValidatorBytesLength != 0 {
+		return ConsensusState{}, fmt.Errorf("expected input size %d+%d*N, actual input size: %d", minimumLength, singleValidatorBytesLength, inputLen)
+	}
+
+	pos := uint64(0)
+	chainID := string(bytes.Trim(input[pos:pos+chainIDLength], "\x00"))
+	pos += chainIDLength
+
+	height := binary.BigEndian.Uint64(input[pos : pos+heightLength])
+	pos += heightLength
+
+	nextValidatorSetHash := input[pos : pos+validatorSetHashLength]
+	pos += validatorSetHashLength
+
+	validatorSetLength := (inputLen - minimumLength) / singleValidatorBytesLength
+	validatorSetBytes := input[pos:]
+	validatorSet := make([]*tmtypes.Validator, 0, validatorSetLength)
+	for index := uint64(0); index < validatorSetLength; index++ {
+		validatorBytes := validatorSetBytes[singleValidatorBytesLength*index : singleValidatorBytesLength*(index+1)]
+
+		pos = 0
+		pubkey := ed25519.PubKey(make([]byte, ed25519.PubKeySize))
+		copy(pubkey[:], validatorBytes[:validatorPubkeyLength])
+		pos += validatorPubkeyLength
+
+		votingPower := int64(binary.BigEndian.Uint64(validatorBytes[pos : pos+validatorVotingPowerLength]))
+		pos += validatorVotingPowerLength
+
+		relayerAddress := make([]byte, relayerAddressLength)
+		copy(relayerAddress[:], validatorBytes[pos:pos+relayerAddressLength])
+		pos += relayerAddressLength
+
+		relayerBlsKey := make([]byte, relayerBlsKeyLength)
+		copy(relayerBlsKey[:], validatorBytes[pos:])
+
+		validator := tmtypes.NewValidator(pubkey, votingPower)
+		validator.SetRelayerAddress(relayerAddress)
+		validator.SetBlsKey(relayerBlsKey)
+		validatorSet = append(validatorSet, validator)
+	}
+
+	consensusState := ConsensusState{
+		ChainID:              chainID,
+		Height:               height,
+		NextValidatorSetHash: nextValidatorSetHash,
+		ValidatorSet: &tmtypes.ValidatorSet{
+			Validators: validatorSet,
+		},
+	}
+
+	return consensusState, nil
+}
+
+func DecodeLightBlockValidationInput(input []byte) (*ConsensusState, error) {
+	singleValidatorBytesLength := validatorPubkeyLength + validatorVotingPowerLength + relayerAddressLength + relayerBlsKeyLength
+	singleValidatorConsensusBytesLength := chainIDLength + heightLength + validatorSetHashLength + singleValidatorBytesLength
+	if uint64(len(input)) < singleValidatorConsensusBytesLength {
+		return nil, errors.New("invalid input")
+	}
+
+	cs, err := DecodeConsensusState(input)
+	if err != nil {
+		return nil, err
+	}
+
+	return &cs, nil
+}
+
+func ApplyLightBlock(cs *ConsensusState, block *tmtypes.LightBlock) (bool, error) {
+	if uint64(block.Height) <= cs.Height {
+		return false, fmt.Errorf("block height <= consensus height (%d < %d)", block.Height, cs.Height)
+	}
+
+	if err := block.ValidateBasic(cs.ChainID); err != nil {
+		return false, err
+	}
+
+	if cs.Height == uint64(block.Height-1) {
+		if !bytes.Equal(cs.NextValidatorSetHash, block.ValidatorsHash) {
+			return false, fmt.Errorf("validators hash mismatch, expected: %s, real: %s", cs.NextValidatorSetHash, block.ValidatorsHash)
+		}
+		err := block.ValidatorSet.VerifyCommitLight(cs.ChainID, block.Commit.BlockID, block.Height, block.Commit)
+		if err != nil {
+			return false, err
+		}
+	} else {
+		// Ensure that +`trustLevel` (default 1/3) or more of last trusted validators signed correctly.
+		err := cs.ValidatorSet.VerifyCommitLightTrusting(cs.ChainID, block.Commit, light.DefaultTrustLevel)
+		if err != nil {
+			return false, err
+		}
+
+		// Ensure that +2/3 of new validators signed correctly.
+		//
+		// NOTE: this should always be the last check because untrustedVals can be
+		// intentionally made very large to DOS the light client. not the case for
+		// VerifyAdjacent, where validator set is known in advance.
+		err = block.ValidatorSet.VerifyCommitLight(cs.ChainID, block.Commit.BlockID, block.Height, block.Commit)
+		if err != nil {
+			return false, err
+		}
+	}
+
+	valSetChanged := !(bytes.Equal(cs.ValidatorSet.Hash(), block.ValidatorsHash))
+
+	// update consensus state
+	cs.Height = uint64(block.Height)
+	cs.NextValidatorSetHash = block.NextValidatorsHash
+	cs.ValidatorSet = block.ValidatorSet
+
+	return valSetChanged, nil
+}
+
+// output:
+// | validatorSetChanged | empty      | consensusStateBytesLength |  new consensusState |
+// | 1 byte              | 23 bytes   | 8 bytes                   |                     |
+func EncodeLightBlockValidationResult(validatorSetChanged bool, consensusStateBytes []byte) []byte {
+	lengthBytes := make([]byte, validateResultMetaDataLength)
+	if validatorSetChanged {
+		copy(lengthBytes[:1], []byte{0x01})
+	}
+
+	consensusStateBytesLength := uint64(len(consensusStateBytes))
+	binary.BigEndian.PutUint64(lengthBytes[validateResultMetaDataLength-uint64TypeLength:], consensusStateBytesLength)
+
+	result := append(lengthBytes, consensusStateBytes...)
+	return result
+}
+
 func (e *BSCExecutor) SetGreenfieldExecutor(ge *GreenfieldExecutor) {
 	e.GreenfieldExecutor = ge
 }
@@ -166,7 +304,7 @@ func (e *BSCExecutor) getCrossChainClient() *crosschain.Crosschain {
 	return e.bscClients[e.clientIdx].crossChainClient
 }
 
-func (e *BSCExecutor) getGreenfieldLightClient() *greenfieldlightclient.Greenfieldlightclient {
+func (e *BSCExecutor) GetGreenfieldLightClient() *greenfieldlightclient.Greenfieldlightclient {
 	e.mutex.RLock()
 	defer e.mutex.RUnlock()
 	return e.bscClients[e.clientIdx].greenfieldLightClient
@@ -377,14 +515,34 @@ func (e *BSCExecutor) SyncTendermintLightBlock(height uint64) (common.Hash, erro
 	if err != nil {
 		return common.Hash{}, err
 	}
-	tx, err := e.getGreenfieldLightClient().SyncLightBlock(txOpts, lightBlock, height)
+	oldcsbts, err := e.GetGreenfieldLightClient().ConsensusStateBytes(nil)
+	if err != nil {
+		return common.Hash{}, err
+	}
+	// logging.Logger.Debugf("mechain-contracts ConsensusStateBytes: %s", hex.EncodeToString(oldcsbts))
+	cs, err := DecodeLightBlockValidationInput(oldcsbts)
+	if err != nil {
+		return common.Hash{}, err
+	}
+	validatorSetChanged, err := ApplyLightBlock(cs, &lightBlock)
+	if err != nil {
+		return common.Hash{}, err
+	}
+
+	consensusStateBytes, err := cs.encodeConsensusState()
+	if err != nil {
+		return common.Hash{}, err
+	}
+	// logging.Logger.Debugf("validatorSetChanged: %t, new ConsensusStateBytes: %s", validatorSetChanged, hex.EncodeToString(consensusStateBytes))
+	result := EncodeLightBlockValidationResult(validatorSetChanged, consensusStateBytes)
+	tx, err := e.GetGreenfieldLightClient().SyncLightBlock(txOpts, result, height)
 	if err != nil {
 		return common.Hash{}, err
 	}
 	return tx.Hash(), nil
 }
 
-func (e *BSCExecutor) QueryTendermintLightBlockWithRetry(height int64) (lightBlock []byte, err error) {
+func (e *BSCExecutor) QueryTendermintLightBlockWithRetry(height int64) (lightBlock tmtypes.LightBlock, err error) {
 	return lightBlock, retry.Do(func() error {
 		lightBlock, err = e.GreenfieldExecutor.QueryTendermintLightBlock(height)
 		return err
@@ -396,13 +554,18 @@ func (e *BSCExecutor) QueryTendermintLightBlockWithRetry(height int64) (lightBlo
 		}))
 }
 
-func (e *BSCExecutor) QueryLatestTendermintHeaderWithRetry() (lightBlock []byte, err error) {
+func (e *BSCExecutor) QueryLatestTendermintHeaderWithRetry() (lightBlockBts []byte, err error) {
 	latestHeigh, err := e.GreenfieldExecutor.GetLatestBlockHeight()
 	if err != nil {
 		return nil, err
 	}
-	return lightBlock, retry.Do(func() error {
-		lightBlock, err = e.GreenfieldExecutor.QueryTendermintLightBlock(int64(latestHeigh))
+	return lightBlockBts, retry.Do(func() error {
+		lightBlock, err := e.GreenfieldExecutor.QueryTendermintLightBlock(int64(latestHeigh))
+		protoBlock, err := lightBlock.ToProto()
+		if err != nil {
+			return err
+		}
+		lightBlockBts, err = protoBlock.Marshal()
 		return err
 	}, relayercommon.RtyAttem,
 		relayercommon.RtyDelay,
@@ -433,11 +596,11 @@ func (e *BSCExecutor) CallBuildInSystemContract(blsSignature []byte, validatorSe
 
 // QueryLatestValidators used for gnfd -> bsc
 func (e *BSCExecutor) QueryLatestValidators() ([]rtypes.Validator, error) {
-	relayerAddresses, err := e.getGreenfieldLightClient().GetRelayers(nil)
+	relayerAddresses, err := e.GetGreenfieldLightClient().GetRelayers(nil)
 	if err != nil {
 		return nil, err
 	}
-	blsKeys, err := e.getGreenfieldLightClient().BlsPubKeys(nil)
+	blsKeys, err := e.GetGreenfieldLightClient().BlsPubKeys(nil)
 	if err != nil {
 		return nil, err
 	}
@@ -482,7 +645,7 @@ func (e *BSCExecutor) GetLightClientLatestHeight() (uint64, error) {
 		Pending: true,
 		Context: ctx,
 	}
-	latestHeight, err := e.getGreenfieldLightClient().GnfdHeight(callOpts)
+	latestHeight, err := e.GetGreenfieldLightClient().GnfdHeight(callOpts)
 	if err != nil {
 		return 0, err
 	}
@@ -508,7 +671,7 @@ func (e *BSCExecutor) GetInturnRelayer() (*rtypes.InturnRelayer, error) {
 		Pending: true,
 		Context: ctx,
 	}
-	r, err := e.getGreenfieldLightClient().GetInturnRelayer(callOpts)
+	r, err := e.GetGreenfieldLightClient().GetInturnRelayer(callOpts)
 	if err != nil {
 		return nil, err
 	}

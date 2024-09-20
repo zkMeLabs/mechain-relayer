@@ -10,7 +10,7 @@
     "private_key": "3c7ea76ddb53539174caae1dd960b308981933bd6e95196556ba29063200df9c",
     "bls_private_key": "4af1a342016cea7a241bf8cec11e68963e03d38993002121c51bc961489c4e02",
     "chain_id": 5151,
-    "start_height": 4800,
+    "start_height": 12630,
     "monitor_channel_list": [1,2,3,4,5,6,10],
     "gas_limit": 500000,
     "fee_amount": 5000000000000,
@@ -29,7 +29,7 @@
     "gas_limit": 4700000,
     "gas_price": 80000000,
     "number_of_blocks_for_finality": 2,
-    "start_height": 3552131,
+    "start_height": 244749680,
     "chain_id": 42161
   },
   "relay_config": {
@@ -37,10 +37,10 @@
     "greenfield_to_bsc_inturn_relayer_timeout": 30,
     "greenfield_sequence_update_latency": 8,
     "bsc_sequence_update_latency": 12,
-    "cross_chain_contract_addr": "0x259Bd4D61b888180d4dF601b27b47bdA38b92Caf",
-    "greenfield_light_client_contract_addr": "0xE3a024eb1FB7D839c59C0E499445EfF1555d3ca9",
-    "relayer_hub_contract_addr": "0xac5524516dB0beB7A9DE497afEeD3aA39BBEb4ae",
-    "src_zkmesbt_contract_addr": "0x2088Fad82b220Ec778699c8EacaAE0f288BBA2af"
+    "cross_chain_contract_addr": "0xcc61dF0Bf366cC460392F06d2d4F8B94D97C98ED",
+    "greenfield_light_client_contract_addr": "0xAeF9fBAeAd2C2D5aF4b442cd1A117286cBeBBCcA",
+    "relayer_hub_contract_addr": "0xe2E91b7E7FC843dB2F684C94d5a6251D4AD6A494",
+    "src_zkmesbt_contract_addr": "0x8E72FabdCA48f62025EEe4AF3821a8264eF828D7"
   },
   "vote_pool_config": {
     "broadcast_interval_in_millisecond": 1000,
