@@ -1,40 +1,43 @@
-# greenfield-relayer
+# mechain-relayer
 
-The Greenfield Relayer is a tool that allows bidirectional communication between Greenfield and BSC. It operates separately 
-and can only be utilized by Greenfield validators. This relayer continuously monitors cross-chain events on BSC and 
-Greenfield, storing them in a database. After a few blocks have been confirmed and reached finality, the relayer uses a BLS 
-private key to sign a message confirming the event. This signed event, also known as "the vote", is then broadcasted through 
-Greenfield's p2p network. Once enough votes are collected from Greenfield relayers, the relay assembles a cross-chain package 
-transaction and submits it to either the BSC or Greenfield network.
+The Mechain Relayer is a tool that allows bidirectional communication between Mechain and ethereum-compatible chain. It operates separately
+and can only be utilized by Mechain validators. This relayer continuously monitors cross-chain events on evm-compatible chain and
+Mechain, storing them in a database. After a few blocks have been confirmed and reached finality, the relayer uses a BLS
+private key to sign a message confirming the event. This signed event, also known as "the vote", is then broadcasted through
+Mechain's p2p network. Once enough votes are collected from Mechain relayers, the relay assembles a cross-chain package
+transaction and submits it to either the evm-compatible chain or Mechain network.
 
 ## Disclaimer
+
 **The software and related documentation are under active development, all subject to potential future change without
 notification and not ready for production use. The code and security audit have not been fully completed and not ready
 for any bug bounty. We advise you to be careful and experiment on the network at your own risk. Stay safe out there.**
 
 ## Main Components
+
 The relayer mainly consists of 3 components: Listener, Vote Processor and Transaction Assembler.
 
 1. The Listener component actively monitors blockchains for any cross-chain events and stores them in the database.
 
 2. The Vote Processor component performs the following functions:
-   a. retrieves unprocessed cross-chain events from database, signs and broadcasts votes for them to the Greenfield P2P network.
-   b. collects enough valid votes for cross-chain events from the Greenfield P2P network and saves them to the database.
+   a. retrieves unprocessed cross-chain events from database, signs and broadcasts votes for them to the Mechain P2P network.
+   b. collects enough valid votes for cross-chain events from the Mechain P2P network and saves them to the database.
 
-3. The Transaction Assembler component prepares and submits transactions to the destination chain by aggregating the 
-   votes and signatures of cross-chain events that have received enough consensus votes. 
-
+3. The Transaction Assembler component prepares and submits transactions to the destination chain by aggregating the
+   votes and signatures of cross-chain events that have received enough consensus votes.
 
 ### Requirement
 
 Go version above 1.20
 
-## Deployment 
+## Deployment
 
 ### Config
+
 1. Set your relayer private key and bls private key imported method (via file or aws secret), deployment environment and gas limit.
-```
-  "greenfield_config": {
+
+``` json
+  "mechain_config": {
     "key_type": "local_private_key",
     "aws_region": "",
     "aws_secret_name": "",
@@ -46,15 +49,15 @@ Go version above 1.20
     ],
     "private_key": "your_private_key",
     "bls_private_key": "your_private_key",
-    "chain_id": 18,     // greenfield oracle module defines this
+    "chain_id": 18,     // mechain oracle module defines this
     "start_height": 1,
     "monitor_channel_list": [1,2,3,4,5,6],
     "gas_limit": 1000,
     "fee_amount": 5000000000000,
-    "chain_id_string": "greenfield_9000-121",
+    "chain_id_string": "mechain_9000-121",
     "use_websocket": true
   }, 
-  "bsc_config": {
+  "evm-compatible chain_config": {
     "key_type": "local_private_key",
     "aws_region": "",
     "aws_secret_name": "",
@@ -70,18 +73,21 @@ Go version above 1.20
   }
 ```
 
-2. Config crosschain and greenfield light client smart contracts addresses, others can keep default value. 
+2. Config crosschain and mechain light client smart contracts addresses, others can keep default value.
+
 ```
 "relay_config": {
-    "bsc_to_greenfield_inturn_relayer_timeout": 40,
-    "greenfield_to_bsc_inturn_relayer_timeout": 30,
-    "greenfield_sequence_update_latency": 8,
-    "bsc_sequence_update_latency": 12,
+    "evm-compatible chain_to_mechain_inturn_relayer_timeout": 40,
+    "mechain_to_evm-compatible chain_inturn_relayer_timeout": 30,
+    "mechain_sequence_update_latency": 8,
+    "evm-compatible chain_sequence_update_latency": 12,
     "cross_chain_contract_addr": "0xd2253A26e6d5b729dDBf4bCce5A78F93C725b455",
-    "greenfield_light_client_contract_addr": "0x349a42f907c7562B3aaD4431780E4596bC2a053f"
+    "mechain_light_client_contract_addr": "0x349a42f907c7562B3aaD4431780E4596bC2a053f"
   }
 ```
+
 3. Set your log and backup preferences.
+
 ```
 "log_config": {
   "level": "DEBUG",
@@ -94,9 +100,11 @@ Go version above 1.20
   "compress": false
 }
 ```
+
 4. Config your database settings. We Support mysql or sqlite.
 
 example: use mysql
+
 ```
 "db_config": {
   "dialect": "mysql",
@@ -105,13 +113,14 @@ example: use mysql
     "aws_secret_name": "",
     "password": "pass",
     "username": "root",
-    "url": "/greenfield-relayer?charset=utf8&parseTime=True&loc=Local",
+    "url": "/mechain-relayer?charset=utf8&parseTime=True&loc=Local",
     "max_idle_conns": 10,
     "max_open_conns": 100
 }
 ```
 
  use sqlite
+
 ```
   "db_config": {
     "dialect": "sqlite3",
@@ -120,15 +129,15 @@ example: use mysql
     "aws_secret_name": "",
     "password": "",
     "username": "",
-    "url": "greenfield-relayer.db",
+    "url": "mechain-relayer.db",
     "max_idle_conns": 10,
     "max_open_conns": 100
   },
 
-
 ```
 
 5. Set alert config to send a telegram message when the data-seeds are not healthy.
+
 ```
 "alert_config": {
   "identity": your_bot_identity
@@ -142,15 +151,14 @@ example: use mysql
 Build binary:
 
 ```shell script
-$ make build
+make build
 ```
 
 Build docker image:
 
 ```shell script
-$ make build_docker
+make build_docker
 ```
-
 
 ## Run locally
 
@@ -165,33 +173,37 @@ docker run --name gnfd-mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -d mysql:8
 Create schema in MySQL client:
 
 ```mysql
-CREATE SCHEMA IF NOT EXISTS `greenfield_relayer` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
-CREATE SCHEMA IF NOT EXISTS `greenfield_relayer_polygon` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
-CREATE SCHEMA IF NOT EXISTS `greenfield_relayer_linea` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+CREATE SCHEMA IF NOT EXISTS `mechain_relayer` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+CREATE SCHEMA IF NOT EXISTS `mechain_relayer_polygon` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+CREATE SCHEMA IF NOT EXISTS `mechain_relayer_linea` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 ...
 ```
 
 ### Fill in config file
 
-Get relayer private key and bls private key in Hex format, fill them in the config/config.json alone with Greenfield, 
-BSC network RPC addresses, chain id and BSC smart contracts addresses.
+Get relayer private key and bls private key in Hex format, fill them in the config/config.json alone with Mechain,
+evm-compatible chain network RPC addresses, chain id and evm-compatible chain smart contracts addresses.
 
 ```shell script
-$ ./build/greenfield-relayer --config-type [local or aws] --config-path config_file_path  --aws-region [aws region or omit] --aws-secret-key [aws secret key for config or omit]
+./build/mechain-relayer --config-type [local or aws] --config-path config_file_path  --aws-region [aws region or omit] --aws-secret-key [aws secret key for config or omit]
 ```
 
 Example:
+
 ```shell script
-$ ./build/greenfield-relayer --config-type local --config-path config/config.json
+./build/mechain-relayer --config-type local --config-path config/config.json
 ```
 
 Run docker:
+
 ```shell script
-$ docker run -it -v /your/data/path:/greenfield-relayer -e CONFIG_TYPE="local" -e CONFIG_FILE_PATH=/your/config/file/path/in/container -d greenfield-relayer
+docker run -it -v /your/data/path:/mechain-relayer -e CONFIG_TYPE="local" -e CONFIG_FILE_PATH=/your/config/file/path/in/container -d mechain-relayer
 ```
 
-### Quick setup for running multiple relayers in local 
-Fill in config files under `./config/local` by following above instruction, you might want to fill in same number of greenfield validators you bootstrap in local,
+### Quick setup for running multiple relayers in local
+
+Fill in config files under `./config/local` by following above instruction, you might want to fill in same number of mechain validators you bootstrap in local,
+
 ```bash
 // start n instance of relayer 
 bash ./deployment/localup/localup.sh start ${SIZE}
@@ -200,9 +212,8 @@ bash ./deployment/localup/localup.sh start ${SIZE}
 bash ./deployment/localup/localup.sh stop
 ```
 
-
-
 ## Contribute
+
 Thank you for considering to help out with the source code! We welcome contributions
 from anyone, and are grateful for even the smallest of fixes!
 
@@ -219,6 +230,11 @@ Please make sure your contributions adhere to our coding guidelines:
 * Commit messages should be prefixed with the package(s) they modify.
 
 ## License
+
 The repo is licensed under the
 [GNU Affero General Public License v3.0](https://www.gnu.org/licenses/agpl-3.0.en.html), also
 included in our repository in the `COPYING` file.
+
+## Fork Information
+
+This project is forked from [greenfield-relayer](https://github.com/bnb-chain/greenfield-relayer). Significant changes have been made to adapt the project for specific use cases, but much of the core functionality comes from the original project.
