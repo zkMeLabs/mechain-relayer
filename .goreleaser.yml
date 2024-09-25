@@ -4,78 +4,69 @@ before:
   hooks:
     - go mod download
 
+# 通用的 ldflags
+env:
+  GLOBAL_LDFLAGS: >-
+    -X github.com/zkMeLabs/mechain-relayer/version.AppVersion={{.Version}}
+    -X github.com/zkMeLabs/mechain-relayer/version.GitCommit={{.Commit}}
+    -X github.com/zkMeLabs/mechain-relayer/version.GitCommitDate={{.Date}}
+
 builds:
-  - id: "mechain-relayer-darwin"
+  - id: "mechain-relayer-darwin-amd64"
     main: ./main.go
     binary: bin/mechain-relayer
+    goos:
+      - darwin
+    goarch:
+      - amd64
     env:
       - CGO_ENABLED=1
       - CC=o64-clang
       - CXX=o64-clang++
-    goos:
-      - darwin
-    goarch:
-      - amd64
-    flags:
-      - -tags=cgo
     ldflags:
-      - -X github.com/zkMeLabs/mechain-relayer/version.AppVersion={{.Version}}
-      - -X github.com/zkMeLabs/mechain-relayer/version.GitCommit={{.Commit}}
-      - -X github.com/zkMeLabs/mechain-relayer/version.GitCommitDate={{.Date}}
+      - "{{ .Env.GLOBAL_LDFLAGS }}"
 
   - id: "mechain-relayer-darwin-arm64"
     main: ./main.go
     binary: bin/mechain-relayer
-    env:
-      - CGO_ENABLED=1
-      - CC=oa64-clang
-      - CXX=oa64-clang++
     goos:
       - darwin
     goarch:
       - arm64
-    flags:
-      - -tags=cgo
-    ldflags:
-      - -X github.com/zkMeLabs/mechain-relayer/version.AppVersion={{.Version}}
-      - -X github.com/zkMeLabs/mechain-relayer/version.GitCommit={{.Commit}}
-      - -X github.com/zkMeLabs/mechain-relayer/version.GitCommitDate={{.Date}}
-
-  - id: "mechain-relayer-linux"
-    main: ./main.go
-    binary: bin/mechain-relayer
     env:
       - CGO_ENABLED=1
-      - CC=gcc
-      - CXX=g++
+      - CC=oa64-clang
+      - CXX=oa64-clang++
+    ldflags:
+      - "{{ .Env.GLOBAL_LDFLAGS }}"
+
+  - id: "mechain-relayer-linux-amd64"
+    main: ./main.go
+    binary: bin/mechain-relayer
     goos:
       - linux
     goarch:
       - amd64
-    flags:
-      - -tags=cgo
+    env:
+      - CGO_ENABLED=1
+      - CC=gcc
+      - CXX=g++
     ldflags:
-      - -X github.com/zkMeLabs/mechain-relayer/version.AppVersion={{.Version}}
-      - -X github.com/zkMeLabs/mechain-relayer/version.GitCommit={{.Commit}}
-      - -X github.com/zkMeLabs/mechain-relayer/version.GitCommitDate={{.Date}}
+      - "{{ .Env.GLOBAL_LDFLAGS }}"
 
   - id: "mechain-relayer-linux-arm64"
     main: ./main.go
     binary: bin/mechain-relayer
-    env:
-      - CGO_ENABLED=1
-      - CC=aarch64-linux-gnu-gcc
-      - CXX=aarch64-linux-gnu-g++
     goos:
       - linux
     goarch:
       - arm64
-    flags:
-      - -tags=cgo
+    env:
+      - CGO_ENABLED=1
+      - CC=aarch64-linux-gnu-gcc
+      - CXX=aarch64-linux-gnu-g++
     ldflags:
-      - -X github.com/zkMeLabs/mechain-relayer/version.AppVersion={{.Version}}
-      - -X github.com/zkMeLabs/mechain-relayer/version.GitCommit={{.Commit}}
-      - -X github.com/zkMeLabs/mechain-relayer/version.GitCommitDate={{.Date}}s
+      - "{{ .Env.GLOBAL_LDFLAGS }}"
 
 archives:
   - format: tar.gz
