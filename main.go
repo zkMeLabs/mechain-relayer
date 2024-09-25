@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/bnb-chain/greenfield-relayer/app"
-	"github.com/bnb-chain/greenfield-relayer/config"
-	"github.com/bnb-chain/greenfield-relayer/logging"
+	"os"
+
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"os"
+	"github.com/zkMeLabs/mechain-relayer/app"
+	"github.com/zkMeLabs/mechain-relayer/config"
+	"github.com/zkMeLabs/mechain-relayer/logging"
 )
 
 func initFlags() {

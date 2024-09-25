@@ -27,14 +27,14 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/spf13/viper"
 
-	relayercommon "github.com/bnb-chain/greenfield-relayer/common"
-	"github.com/bnb-chain/greenfield-relayer/config"
-	"github.com/bnb-chain/greenfield-relayer/contract/crosschain"
-	"github.com/bnb-chain/greenfield-relayer/contract/greenfieldlightclient"
-	"github.com/bnb-chain/greenfield-relayer/contract/relayerhub"
-	"github.com/bnb-chain/greenfield-relayer/logging"
-	"github.com/bnb-chain/greenfield-relayer/metric"
-	rtypes "github.com/bnb-chain/greenfield-relayer/types"
+	relayercommon "github.com/zkMeLabs/mechain-relayer/common"
+	"github.com/zkMeLabs/mechain-relayer/config"
+	"github.com/zkMeLabs/mechain-relayer/contract/crosschain"
+	"github.com/zkMeLabs/mechain-relayer/contract/greenfieldlightclient"
+	"github.com/zkMeLabs/mechain-relayer/contract/relayerhub"
+	"github.com/zkMeLabs/mechain-relayer/logging"
+	"github.com/zkMeLabs/mechain-relayer/metric"
+	rtypes "github.com/zkMeLabs/mechain-relayer/types"
 )
 
 type BSCClient struct {

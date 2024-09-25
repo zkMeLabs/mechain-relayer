@@ -2,13 +2,14 @@ package dao
 
 import (
 	"database/sql"
-	"github.com/cometbft/cometbft/votepool"
 	"time"
+
+	"github.com/cometbft/cometbft/votepool"
 
 	"gorm.io/gorm"
 
-	"github.com/bnb-chain/greenfield-relayer/db"
-	"github.com/bnb-chain/greenfield-relayer/db/model"
+	"github.com/zkMeLabs/mechain-relayer/db"
+	"github.com/zkMeLabs/mechain-relayer/db/model"
 )
 
 type BSCDao struct {

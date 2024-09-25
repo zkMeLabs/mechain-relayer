@@ -3,7 +3,7 @@ package model
 import (
 	"gorm.io/gorm"
 
-	"github.com/bnb-chain/greenfield-relayer/db"
+	"github.com/zkMeLabs/mechain-relayer/db"
 )
 
 type GreenfieldBlock struct {

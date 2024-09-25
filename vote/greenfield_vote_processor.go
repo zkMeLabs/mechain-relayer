@@ -17,15 +17,15 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"gorm.io/gorm"
 
-	rcommon "github.com/bnb-chain/greenfield-relayer/common"
-	"github.com/bnb-chain/greenfield-relayer/config"
-	"github.com/bnb-chain/greenfield-relayer/db"
-	"github.com/bnb-chain/greenfield-relayer/db/dao"
-	"github.com/bnb-chain/greenfield-relayer/db/model"
-	"github.com/bnb-chain/greenfield-relayer/executor"
-	"github.com/bnb-chain/greenfield-relayer/logging"
-	"github.com/bnb-chain/greenfield-relayer/types"
-	"github.com/bnb-chain/greenfield-relayer/util"
+	rcommon "github.com/zkMeLabs/mechain-relayer/common"
+	"github.com/zkMeLabs/mechain-relayer/config"
+	"github.com/zkMeLabs/mechain-relayer/db"
+	"github.com/zkMeLabs/mechain-relayer/db/dao"
+	"github.com/zkMeLabs/mechain-relayer/db/model"
+	"github.com/zkMeLabs/mechain-relayer/executor"
+	"github.com/zkMeLabs/mechain-relayer/logging"
+	"github.com/zkMeLabs/mechain-relayer/types"
+	"github.com/zkMeLabs/mechain-relayer/util"
 )
 
 type GreenfieldVoteProcessor struct {
@@ -38,7 +38,8 @@ type GreenfieldVoteProcessor struct {
 }
 
 func NewGreenfieldVoteProcessor(cfg *config.Config, dao *dao.DaoManager, signer *VoteSigner,
-	greenfieldExecutor *executor.GreenfieldExecutor) *GreenfieldVoteProcessor {
+	greenfieldExecutor *executor.GreenfieldExecutor,
+) *GreenfieldVoteProcessor {
 	var eventType votepool.EventType
 	if cfg.BSCConfig.IsOpCrossChain() {
 		eventType = votepool.ToOpCrossChainEvent
@@ -76,8 +77,8 @@ func (p *GreenfieldVoteProcessor) signAndBroadcast() error {
 	// for every tx, we are going to sign it and broadcast vote of it.
 	for _, tx := range txs {
 
-		//in case there is chance that reprocessing same transactions(caused by DB data loss) or processing outdated
-		//transactions from block( when relayer need to catch up others), this ensures relayer will skip to next transaction directly
+		// in case there is chance that reprocessing same transactions(caused by DB data loss) or processing outdated
+		// transactions from block( when relayer need to catch up others), this ensures relayer will skip to next transaction directly
 		isFilled, err := p.isTxSequenceFilled(tx)
 		if err != nil {
 			return err

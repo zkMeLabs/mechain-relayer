@@ -1,10 +1,10 @@
 package relayer
 
 import (
-	"github.com/bnb-chain/greenfield-relayer/assembler"
-	"github.com/bnb-chain/greenfield-relayer/executor"
-	"github.com/bnb-chain/greenfield-relayer/listener"
-	"github.com/bnb-chain/greenfield-relayer/vote"
+	"github.com/zkMeLabs/mechain-relayer/assembler"
+	"github.com/zkMeLabs/mechain-relayer/executor"
+	"github.com/zkMeLabs/mechain-relayer/listener"
+	"github.com/zkMeLabs/mechain-relayer/vote"
 )
 
 type GreenfieldRelayer struct {

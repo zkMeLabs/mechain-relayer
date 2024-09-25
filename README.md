@@ -237,4 +237,4 @@ included in our repository in the `COPYING` file.
 
 ## Fork Information
 
-This project is forked from [greenfield-relayer](https://github.com/bnb-chain/greenfield-relayer). Significant changes have been made to adapt the project for specific use cases, but much of the core functionality comes from the original project.
+This project is forked from [greenfield-relayer](https://github.com/zkMeLabs/mechain-relayer). Significant changes have been made to adapt the project for specific use cases, but much of the core functionality comes from the original project.

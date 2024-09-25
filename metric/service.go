@@ -8,7 +8,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/bnb-chain/greenfield-relayer/config"
+	"github.com/zkMeLabs/mechain-relayer/config"
 )
 
 const (

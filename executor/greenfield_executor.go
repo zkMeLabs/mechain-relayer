@@ -25,12 +25,12 @@ import (
 	"github.com/spf13/viper"
 
 	sdktypes "github.com/bnb-chain/greenfield-go-sdk/types"
-	relayercommon "github.com/bnb-chain/greenfield-relayer/common"
-	"github.com/bnb-chain/greenfield-relayer/config"
-	"github.com/bnb-chain/greenfield-relayer/contract/zkmecrosschainupgradeable"
-	"github.com/bnb-chain/greenfield-relayer/logging"
-	"github.com/bnb-chain/greenfield-relayer/types"
 	gnfdsdktypes "github.com/evmos/evmos/v12/sdk/types"
+	relayercommon "github.com/zkMeLabs/mechain-relayer/common"
+	"github.com/zkMeLabs/mechain-relayer/config"
+	"github.com/zkMeLabs/mechain-relayer/contract/zkmecrosschainupgradeable"
+	"github.com/zkMeLabs/mechain-relayer/logging"
+	"github.com/zkMeLabs/mechain-relayer/types"
 )
 
 type GreenfieldExecutor struct {

@@ -1,4 +1,4 @@
-module github.com/bnb-chain/greenfield-relayer
+module github.com/zkMeLabs/mechain-relayer
 
 go 1.21
 

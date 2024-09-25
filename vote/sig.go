@@ -11,8 +11,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/willf/bitset"
 
-	"github.com/bnb-chain/greenfield-relayer/db/model"
-	"github.com/bnb-chain/greenfield-relayer/types"
+	"github.com/zkMeLabs/mechain-relayer/db/model"
+	"github.com/zkMeLabs/mechain-relayer/types"
 )
 
 // VerifySignature verifies vote signature

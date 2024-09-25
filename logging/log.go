@@ -6,7 +6,7 @@ import (
 	"github.com/op/go-logging"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/bnb-chain/greenfield-relayer/config"
+	"github.com/zkMeLabs/mechain-relayer/config"
 )
 
 var (

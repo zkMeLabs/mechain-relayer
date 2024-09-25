@@ -6,7 +6,7 @@ import (
 
 	"github.com/cometbft/cometbft/votepool"
 
-	"github.com/bnb-chain/greenfield-relayer/db/model"
+	"github.com/zkMeLabs/mechain-relayer/db/model"
 )
 
 func DtoToEntity(v *model.Vote) (*votepool.Vote, error) {

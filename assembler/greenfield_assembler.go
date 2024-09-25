@@ -10,17 +10,17 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/0xPolygon/polygon-edge/bls"
-	"github.com/bnb-chain/greenfield-relayer/common"
-	"github.com/bnb-chain/greenfield-relayer/config"
-	"github.com/bnb-chain/greenfield-relayer/db"
-	"github.com/bnb-chain/greenfield-relayer/db/dao"
-	"github.com/bnb-chain/greenfield-relayer/db/model"
-	"github.com/bnb-chain/greenfield-relayer/executor"
-	"github.com/bnb-chain/greenfield-relayer/logging"
-	"github.com/bnb-chain/greenfield-relayer/metric"
-	"github.com/bnb-chain/greenfield-relayer/types"
-	"github.com/bnb-chain/greenfield-relayer/util"
-	"github.com/bnb-chain/greenfield-relayer/vote"
+	"github.com/zkMeLabs/mechain-relayer/common"
+	"github.com/zkMeLabs/mechain-relayer/config"
+	"github.com/zkMeLabs/mechain-relayer/db"
+	"github.com/zkMeLabs/mechain-relayer/db/dao"
+	"github.com/zkMeLabs/mechain-relayer/db/model"
+	"github.com/zkMeLabs/mechain-relayer/executor"
+	"github.com/zkMeLabs/mechain-relayer/logging"
+	"github.com/zkMeLabs/mechain-relayer/metric"
+	"github.com/zkMeLabs/mechain-relayer/types"
+	"github.com/zkMeLabs/mechain-relayer/util"
+	"github.com/zkMeLabs/mechain-relayer/vote"
 )
 
 type AlertKey struct {
@@ -43,7 +43,8 @@ type GreenfieldAssembler struct {
 }
 
 func NewGreenfieldAssembler(cfg *config.Config, executor *executor.GreenfieldExecutor, dao *dao.DaoManager, bscExecutor *executor.BSCExecutor,
-	ms *metric.MetricService) *GreenfieldAssembler {
+	ms *metric.MetricService,
+) *GreenfieldAssembler {
 	channels := cfg.GreenfieldConfig.MonitorChannelList
 	inturnRelayerSequenceStatusMap := make(map[types.ChannelId]*types.SequenceStatus)
 

@@ -11,10 +11,10 @@ import (
 
 	sdkclient "github.com/bnb-chain/greenfield-go-sdk/client"
 	"github.com/bnb-chain/greenfield-go-sdk/types"
-	"github.com/bnb-chain/greenfield-relayer/contract/zkmecrosschainupgradeable"
-	"github.com/bnb-chain/greenfield-relayer/logging"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/zkMeLabs/mechain-relayer/contract/zkmecrosschainupgradeable"
+	"github.com/zkMeLabs/mechain-relayer/logging"
 )
 
 type GreenfieldClient struct {

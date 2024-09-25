@@ -11,11 +11,11 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/core/types"
 
-	"github.com/bnb-chain/greenfield-relayer/common"
-	"github.com/bnb-chain/greenfield-relayer/contract/zkmecrosschainupgradeable"
-	"github.com/bnb-chain/greenfield-relayer/db"
-	"github.com/bnb-chain/greenfield-relayer/db/model"
-	rtypes "github.com/bnb-chain/greenfield-relayer/types"
+	"github.com/zkMeLabs/mechain-relayer/common"
+	"github.com/zkMeLabs/mechain-relayer/contract/zkmecrosschainupgradeable"
+	"github.com/zkMeLabs/mechain-relayer/db"
+	"github.com/zkMeLabs/mechain-relayer/db/model"
+	rtypes "github.com/zkMeLabs/mechain-relayer/types"
 )
 
 func ParseRelayPackage(abi *abi.ABI, log *types.Log, timestamp uint64, greenfieldChainId, bscChainId sdk.ChainID) (*model.BscRelayPackage, error) {

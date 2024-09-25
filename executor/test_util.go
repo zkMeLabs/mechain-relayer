@@ -7,7 +7,7 @@ import (
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	cbfttypes "github.com/cometbft/cometbft/types"
 
-	"github.com/bnb-chain/greenfield-relayer/config"
+	"github.com/zkMeLabs/mechain-relayer/config"
 )
 
 func GetTestConfig() *config.Config {

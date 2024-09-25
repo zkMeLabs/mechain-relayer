@@ -12,15 +12,15 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/bnb-chain/greenfield-relayer/assembler"
-	"github.com/bnb-chain/greenfield-relayer/config"
-	"github.com/bnb-chain/greenfield-relayer/db/dao"
-	"github.com/bnb-chain/greenfield-relayer/db/model"
-	"github.com/bnb-chain/greenfield-relayer/executor"
-	"github.com/bnb-chain/greenfield-relayer/listener"
-	"github.com/bnb-chain/greenfield-relayer/metric"
-	"github.com/bnb-chain/greenfield-relayer/relayer"
-	"github.com/bnb-chain/greenfield-relayer/vote"
+	"github.com/zkMeLabs/mechain-relayer/assembler"
+	"github.com/zkMeLabs/mechain-relayer/config"
+	"github.com/zkMeLabs/mechain-relayer/db/dao"
+	"github.com/zkMeLabs/mechain-relayer/db/model"
+	"github.com/zkMeLabs/mechain-relayer/executor"
+	"github.com/zkMeLabs/mechain-relayer/listener"
+	"github.com/zkMeLabs/mechain-relayer/metric"
+	"github.com/zkMeLabs/mechain-relayer/relayer"
+	"github.com/zkMeLabs/mechain-relayer/vote"
 )
 
 type App struct {

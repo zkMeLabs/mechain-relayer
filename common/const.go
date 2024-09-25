@@ -5,7 +5,7 @@ import (
 
 	"github.com/avast/retry-go/v4"
 
-	"github.com/bnb-chain/greenfield-relayer/types"
+	"github.com/zkMeLabs/mechain-relayer/types"
 )
 
 var (

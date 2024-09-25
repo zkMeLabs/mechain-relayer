@@ -21,16 +21,16 @@ import (
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 
-	"github.com/bnb-chain/greenfield-relayer/common"
-	"github.com/bnb-chain/greenfield-relayer/config"
-	"github.com/bnb-chain/greenfield-relayer/contract/zkmecrosschainupgradeable"
-	"github.com/bnb-chain/greenfield-relayer/db"
-	"github.com/bnb-chain/greenfield-relayer/db/dao"
-	"github.com/bnb-chain/greenfield-relayer/db/model"
-	"github.com/bnb-chain/greenfield-relayer/executor"
-	"github.com/bnb-chain/greenfield-relayer/logging"
-	"github.com/bnb-chain/greenfield-relayer/metric"
-	"github.com/bnb-chain/greenfield-relayer/util"
+	"github.com/zkMeLabs/mechain-relayer/common"
+	"github.com/zkMeLabs/mechain-relayer/config"
+	"github.com/zkMeLabs/mechain-relayer/contract/zkmecrosschainupgradeable"
+	"github.com/zkMeLabs/mechain-relayer/db"
+	"github.com/zkMeLabs/mechain-relayer/db/dao"
+	"github.com/zkMeLabs/mechain-relayer/db/model"
+	"github.com/zkMeLabs/mechain-relayer/executor"
+	"github.com/zkMeLabs/mechain-relayer/logging"
+	"github.com/zkMeLabs/mechain-relayer/metric"
+	"github.com/zkMeLabs/mechain-relayer/util"
 )
 
 type GreenfieldListener struct {
@@ -43,7 +43,8 @@ type GreenfieldListener struct {
 }
 
 func NewGreenfieldListener(cfg *config.Config, gnfdExecutor *executor.GreenfieldExecutor, bscExecutor *executor.BSCExecutor,
-	dao *dao.DaoManager, ms *metric.MetricService) *GreenfieldListener {
+	dao *dao.DaoManager, ms *metric.MetricService,
+) *GreenfieldListener {
 	crossChainAbi, err := abi.JSON(strings.NewReader(zkmecrosschainupgradeable.IZKMECrossChainUpgradeableMetaData.ABI))
 	if err != nil {
 		panic("marshal abi error")
