@@ -1,0 +1,101 @@
+version: 2
+
+before:
+  hooks:
+    - go mod download
+
+builds:
+  # - id: "mechain-relayer-darwin"
+  #   main: .
+  #   binary: bin/mechain-relayer
+  #   env:
+  #     - CGO_ENABLED=1
+  #     - CC=o64-clang
+  #     - CXX=o64-clang++
+  #   goos:
+  #     - darwin
+  #   goarch:
+  #     - amd64
+  #   flags:
+  #     - -tags=cgo
+  #   ldflags:
+  #     - -X github.com/zkMeLabs/mechain-relayer/version.AppVersion={{.Version}}
+  #     - -X github.com/zkMeLabs/mechain-relayer/version.GitCommit={{.Commit}}
+  #     - -X github.com/zkMeLabs/mechain-relayer/version.GitCommitDate={{.Date}}
+
+  # - id: "mechain-relayer-darwin-arm64"
+  #   main: ./cmd/storage_provider
+  #   binary: bin/mechain-relayer
+  #   env:
+  #     - CGO_ENABLED=1
+  #     - CC=oa64-clang
+  #     - CXX=oa64-clang++
+  #   goos:
+  #     - darwin
+  #   goarch:
+  #     - arm64
+  #   flags:
+  #     - -tags=cgo
+  #   ldflags:
+  #     - -X github.com/zkMeLabs/mechain-relayer/version.AppVersion={{.Version}}
+  #     - -X github.com/zkMeLabs/mechain-relayer/version.GitCommit={{.Commit}}
+  #     - -X github.com/zkMeLabs/mechain-relayer/version.GitCommitDate={{.Date}}
+
+  - id: "mechain-relayer-linux"
+    main: ./cmd/storage_provider
+    binary: bin/mechain-relayer
+    env:
+      - CGO_ENABLED=1
+      - CC=gcc
+      - CXX=g++
+    goos:
+      - linux
+    goarch:
+      - amd64
+    flags:
+      - -tags=cgo
+    ldflags:
+      - -X github.com/zkMeLabs/mechain-relayer/version.AppVersion={{.Version}}
+      - -X github.com/zkMeLabs/mechain-relayer/version.GitCommit={{.Commit}}
+      - -X github.com/zkMeLabs/mechain-relayer/version.GitCommitDate={{.Date}}
+
+  - id: "mechain-relayer-linux-arm64"
+    main: ./cmd/storage_provider
+    binary: bin/mechain-relayer
+    env:
+      - CGO_ENABLED=1
+      - CC=aarch64-linux-gnu-gcc
+      - CXX=aarch64-linux-gnu-g++
+    goos:
+      - linux
+    goarch:
+      - arm64
+    flags:
+      - -tags=cgo
+    ldflags:
+      - -X github.com/zkMeLabs/mechain-relayer/version.AppVersion={{.Version}}
+      - -X github.com/zkMeLabs/mechain-relayer/version.GitCommit={{.Commit}}
+      - -X github.com/zkMeLabs/mechain-relayer/version.GitCommitDate={{.Date}}s
+
+archives:
+  - format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ .Os }}_{{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+checksum:
+  name_template: "checksums.txt"
+
+release:
+  replace_existing_artifacts: true
