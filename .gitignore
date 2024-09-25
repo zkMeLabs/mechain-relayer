@@ -7,3 +7,4 @@ integrationtest/config/*
 # deployment
 deployment/dockerup/validator.json
 deployment/dockerup/init_done
+dist
