@@ -5,7 +5,7 @@ basedir=$(
 )
 workspace=${basedir}
 
-bin_name=greenfield-relayer
+bin_name=mechain-relayer
 bin=${workspace}/../../build/${bin_name}
 
 function start() {

@@ -78,7 +78,7 @@ services:
     command: >
       bash -c "
       sleep {{.NodeIndex}} &&
-      greenfield-relayer run --config-type local --config-path /app/relayer{{.NodeIndex}}/config.json --log_dir json
+      mechain-relayer run --config-type local --config-path /app/relayer{{.NodeIndex}}/config.json --log_dir json
       "
 {{- end }}
 volumes:

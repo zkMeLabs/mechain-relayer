@@ -34,7 +34,7 @@ ENV AWS_SECRET_KEY ""
 
 ENV WORKDIR=/app
 WORKDIR ${WORKDIR}
-COPY --from=builder /opt/app/build/greenfield-relayer ${WORKDIR}
+COPY --from=builder /opt/app/build/mechain-relayer ${WORKDIR}
 
 # Run the app
-ENTRYPOINT ["/app/greenfield-relayer"]
+ENTRYPOINT ["/app/mechain-relayer"]

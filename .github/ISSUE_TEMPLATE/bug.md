@@ -1,6 +1,6 @@
 ---
 name: Report a bug
-about: Something with greenfield-relayer is not working as expected
+about: Something with mechain-relayer is not working as expected
 title: ''
 labels: 'type:bug'
 assignees: ''
@@ -14,12 +14,9 @@ Commit hash : (if `develop`)
 
 #### Expected behaviour
 
-
 #### Actual behaviour
 
-
 #### Steps to reproduce the behaviour
-
 
 #### Backtrace
 

@@ -31,8 +31,8 @@ func initFlags() {
 }
 
 func printUsage() {
-	fmt.Print("usage: ./greenfield-relayer --config-type local --config-path configFile\n")
-	fmt.Print("usage: ./greenfield-relayer --config-type aws --aws-region awsRegin --aws-secret-key awsSecretKey\n")
+	fmt.Print("usage: ./mechain-relayer --config-type local --config-path configFile\n")
+	fmt.Print("usage: ./mechain-relayer --config-type aws --aws-region awsRegin --aws-secret-key awsSecretKey\n")
 }
 
 func main() {

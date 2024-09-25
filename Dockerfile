@@ -5,6 +5,6 @@ RUN make build
 
 FROM golang:1.22.4-bullseye
 RUN apt-get update -y && apt-get install ca-certificates jq -y
-COPY --from=builder /workspace/build/greenfield-relayer  /usr/bin/greenfield-relayer
+COPY --from=builder /workspace/build/mechain-relayer  /usr/bin/mechain-relayer
 
-CMD ["greenfield-relayer"]
+CMD ["mechain-relayer"]

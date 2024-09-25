@@ -11,7 +11,7 @@ import (
 
 var (
 	// Logger instance for quick declarative logging levels
-	Logger = logging.MustGetLogger("greenfield-relayer")
+	Logger = logging.MustGetLogger("mechain-relayer")
 	// log levels that are available
 	levels = map[string]logging.Level{
 		"CRITICAL": logging.CRITICAL,
