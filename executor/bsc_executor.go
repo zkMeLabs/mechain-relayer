@@ -503,14 +503,6 @@ func (e *BSCExecutor) getTransactor(nonce uint64) (*bind.TransactOpts, error) {
 func (e *BSCExecutor) SyncTendermintLightBlock(height uint64) (common.Hash, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), RPCTimeout)
 	defer cancel()
-	nonce, err := e.GetEthClient().PendingNonceAt(ctx, e.txSender)
-	if err != nil {
-		return common.Hash{}, err
-	}
-	txOpts, err := e.getTransactor(nonce)
-	if err != nil {
-		return common.Hash{}, err
-	}
 	lightBlock, err := e.QueryTendermintLightBlockWithRetry(int64(height))
 	if err != nil {
 		return common.Hash{}, err
@@ -535,6 +527,14 @@ func (e *BSCExecutor) SyncTendermintLightBlock(height uint64) (common.Hash, erro
 	}
 	// logging.Logger.Debugf("validatorSetChanged: %t, new ConsensusStateBytes: %s", validatorSetChanged, hex.EncodeToString(consensusStateBytes))
 	result := EncodeLightBlockValidationResult(validatorSetChanged, consensusStateBytes)
+	nonce, err := e.GetEthClient().PendingNonceAt(ctx, e.txSender)
+	if err != nil {
+		return common.Hash{}, err
+	}
+	txOpts, err := e.getTransactor(nonce)
+	if err != nil {
+		return common.Hash{}, err
+	}
 	tx, err := e.GetGreenfieldLightClient().SyncLightBlock(txOpts, result, height)
 	if err != nil {
 		return common.Hash{}, err

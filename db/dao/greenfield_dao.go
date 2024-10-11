@@ -82,7 +82,7 @@ func (d *GreenfieldDao) GetLatestSequenceByChannelIdAndStatus(channelId types.Ch
 	if !result.Valid {
 		return -1, nil
 	}
-	return result.Int64, nil
+	return result.Int64 + 1, nil
 }
 
 func (d *GreenfieldDao) UpdateTransactionStatus(id int64, status db.TxStatus) error {
