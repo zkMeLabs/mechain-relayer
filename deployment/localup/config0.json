@@ -1,5 +1,5 @@
 {
-  "greenfield_config": {
+  "mechain-relayer": {
     "key_type": "local_private_key",
     "aws_region": "",
     "aws_secret_name": "",

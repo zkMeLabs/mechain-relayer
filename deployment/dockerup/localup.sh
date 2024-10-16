@@ -33,8 +33,8 @@ function make_config() {
         OUTPUT_FILE="${local_env}/relayer${i}/config.json"
         jq --arg bls_priv_key "$bls_priv_key" \
             --arg relayer_key "$relayer_key" \
-            '.greenfield_config.bls_private_key = $bls_priv_key |
-            .greenfield_config.private_key = $relayer_key |
+            '.mechain-relayer.bls_private_key = $bls_priv_key |
+            .mechain-relayer.private_key = $relayer_key |
             .bsc_config.private_key = $relayer_key' \
             "$CONFIG_FILE" >"$OUTPUT_FILE"
         echo "Saved to $OUTPUT_FILE"

@@ -1,17 +1,15 @@
 {
-  "greenfield_config": {
+  "mechain-relayer": {
     "key_type": "local_private_key",
     "aws_region": "",
     "aws_secret_name": "",
     "aws_bls_secret_name": "",
-    "rpc_addrs": [
-      "http://127.0.0.1:26657"
-    ],
+    "rpc_addrs": ["http://127.0.0.1:26657"],
     "private_key": "3c7ea76ddb53539174caae1dd960b308981933bd6e95196556ba29063200df9c",
     "bls_private_key": "4af1a342016cea7a241bf8cec11e68963e03d38993002121c51bc961489c4e02",
     "chain_id": 5151,
     "start_height": 20330,
-    "monitor_channel_list": [1,2,3,4,5,6,10],
+    "monitor_channel_list": [1, 2, 3, 4, 5, 6, 10],
     "gas_limit": 500000,
     "fee_amount": 5000000000000,
     "chain_id_string": "mechain_5151-1",
@@ -22,9 +20,7 @@
     "key_type": "local_private_key",
     "aws_region": "",
     "aws_secret_name": "",
-    "rpc_addrs": [
-      "https://scroll.drpc.org"
-    ],
+    "rpc_addrs": ["https://scroll.drpc.org"],
     "private_key": "3c7ea76ddb53539174caae1dd960b308981933bd6e95196556ba29063200df9c",
     "gas_limit": 4700000,
     "gas_price": 100000000,
