@@ -7,7 +7,7 @@ import (
 )
 
 type Config struct {
-	GreenfieldConfig GreenfieldConfig `json:"greenfield_config"`
+	GreenfieldConfig GreenfieldConfig `json:"mechain-relayer"`
 	BSCConfig        BSCConfig        `json:"bsc_config"`
 	RelayConfig      RelayConfig      `json:"relay_config"`
 	VotePoolConfig   VotePoolConfig   `json:"vote_pool_config"`
